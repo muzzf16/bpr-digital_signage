@@ -23,8 +23,10 @@ html,body,#root{
   background:var(--bg);
   font-family:var(--font-sans);
   color:var(--white);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-smooth: always;
 }
 *{box-sizing:border-box}
 

@@ -31,37 +31,102 @@ export default function RatePanel({ productId, fallback }) {
   const rate = data?.rate;
   const loading = !data && !error;
 
+  // Sample interest rate summary - in a real implementation this would come from an API
+  // This is for demonstration purposes when we don't have specific product data
+  const rateSummary = {
+    tabungan: '0.00',
+    deposito: '6.85',
+    kredit: '8.50'
+  };
+
   if (loading && !rate) {
+    // Loading state - showing a small progress bar instead of text
     return (
-      <div className="rate-panel">
-        <div style={{ opacity: 0.85 }}>Memuat suku bunga...</div>
+      <div className="rate-panel" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: '100%',
+        alignItems: 'center',
+        color: '#f5faff'
+      }}>
+        <div style={{ 
+          fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)',
+          marginBottom: '0.5vh'
+        }}>
+          Memuat suku bunga...
+        </div>
+        {/* Small loading animation */}
+        <div style={{
+          width: '60%',
+          height: '4px',
+          backgroundColor: 'rgba(255,255,255,0.2)',
+          borderRadius: '2px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            width: '30%',
+            height: '100%',
+            backgroundColor: '#50c878',
+            animation: 'loading 1.5s infinite ease-in-out'
+          }}></div>
+        </div>
+        <style>{`
+          @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  // Extract rate data with fallbacks
-  const interest = rate?.interestRate ?? 0;
-  const productName = rate?.productName || "Produk Tabungan";
-  const displayUntil = rate?.displayUntil;
-
   return (
-    <div className="rate-panel" role="region" aria-label={`Suku bunga ${productName}`}>
-      <div className="rate-label">Tabungan</div>
-      <div className="rate-value">
-        {Number(interest).toLocaleString('id-ID', { maximumFractionDigits: 2 })}%
-      </div>
-      <div style={{ 
-        marginTop: "0.6em", 
-        fontSize: "clamp(0.9rem,1.2vw,1.2rem)", 
-        color: "rgba(255,255,255,0.9)" 
+    <div className="rate-panel" role="region" aria-label="Ringkasan suku bunga" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      height: '100%',
+      color: '#f5faff',
+      textAlign: 'center'
+    }}>
+      <div style={{
+        fontSize: 'clamp(0.7rem, 1vw, 0.8rem)',
+        fontWeight: '600',
+        opacity: 0.85,
+        marginBottom: '0.4vh'
       }}>
-        Berlaku hingga: {displayUntil 
-          ? new Date(displayUntil).toLocaleDateString('id-ID', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }) 
-          : '-'}
+        Suku Bunga Terbaru
+      </div>
+      <div style={{
+        fontSize: 'clamp(0.65rem, 0.9vw, 0.75rem)',
+        lineHeight: '1.4',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.2vh'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
+          <span style={{ opacity: 0.9 }}>Tabungan:</span>
+          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.tabungan}%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
+          <span style={{ opacity: 0.9 }}>Deposito:</span>
+          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.deposito}%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
+          <span style={{ opacity: 0.9 }}>Kredit:</span>
+          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.kredit}%</span>
+        </div>
+      </div>
+      <div style={{
+        fontSize: 'clamp(0.5rem, 0.7vw, 0.6rem)',
+        opacity: 0.6,
+        textAlign: 'center',
+        marginTop: '0.4vh',
+        paddingTop: '0.3vh',
+        borderTop: '1px solid rgba(255,255,255,0.2)'
+      }}>
+        Berlaku hingga: Nov 2025
       </div>
     </div>
   );

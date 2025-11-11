@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useEconomicData } from "../context/EconomicContext";
 import ImageSlide from "./ImageSlide";
 import PromoCard from "./PromoCard";
 import RatePanel from "./RatePanel";
@@ -6,8 +7,6 @@ import EconPanel from "./EconPanel";
 import NewsTicker from "./NewsTicker";
 import VideoSlide from "./VideoSlide";
 import ProductHighlight from "./ProductHighlight";
-import TimeDisplay from "./TimeDisplay";
-import WeatherPanel from "./WeatherPanel";
 import MiniChart from "./MiniChart";
 import NewsPanel from "./NewsPanel";
 import Announcements from "./Announcements";
@@ -53,6 +52,13 @@ export default function Player({ deviceId }) {
     year: "numeric",
     timeZone: "Asia/Jakarta"
   }).format(now);
+
+  // Get economic data for weather and other info
+  const { data: economicData, loading: economicLoading } = useEconomicData();
+  
+  // Extract weather data from economic data
+  const temperature = economicData?.weather?.temperature || 31;
+  const condition = economicData?.weather?.condition || "Cerah Berawan";
 
   // Fetch playlist
   const fetchPlaylist = useCallback(async () => {
@@ -214,10 +220,10 @@ export default function Player({ deviceId }) {
             display: "flex",
             alignItems: "center",
             gap: "1vw",
-            background: "rgba(0,0,0,0.28)",
+            background: "linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0))",
             padding: "0.6vw 1vw",
-            borderRadius: 10,
-            backdropFilter: "blur(6px)"
+            borderRadius: 16,
+            backdropFilter: "blur(8px)"
           }}
         >
           <img
@@ -226,9 +232,12 @@ export default function Player({ deviceId }) {
             onError={(e) => (e.currentTarget.style.display = "none")}
             style={{ width: "clamp(48px, 6vw, 96px)", height: "auto", objectFit: "contain" }}
           />
-          <div style={{ color: "#fff", fontWeight: 800, lineHeight: 1 }}>
+          <div style={{ color: "#f5faff", fontWeight: 800, lineHeight: 1 }}>
             <div style={{ fontSize: "clamp(0.9rem, 1.8vw, 1.6rem)" }}>Bank</div>
             <div style={{ fontSize: "clamp(1.2rem, 2.4vw, 2.8rem)", color: "#ffd166" }}>Perekonomian Rakyat</div>
+            <div style={{ fontSize: "clamp(0.7rem, 1vw, 0.8rem)", color: "#f5faff", opacity: 0.75, marginTop: "0.2vh" }}>
+              Solusi Keuangan Masyarakat — Aman & Terpercaya
+            </div>
           </div>
         </div>
       </div>
@@ -241,7 +250,7 @@ export default function Player({ deviceId }) {
             padding: "0.5vw 0.9vw",
             borderRadius: 10,
             backdropFilter: "blur(6px)",
-            color: "#fff",
+            color: "#f5faff",
             minWidth: "10ch"
           }}
         >
@@ -258,100 +267,148 @@ export default function Player({ deviceId }) {
       </div>
 
       {/* Announcements panel below the promo card */}
-      <div style={{ 
-        position: "absolute", 
-        top: "calc(10vh + 50%)", 
-        left: "2vw", 
-        width: "30%", 
-        zIndex: 31 
+      <div style={{
+        position: "absolute",
+        top: "calc(10vh + 50%)",
+        left: "2vw",
+        width: "30%",
+        zIndex: 31
       }}>
         <Announcements deviceId={deviceId} />
       </div>
 
-      <div className="right-col" role="complementary" style={{ 
-        position: "absolute", 
-        top: "10vh", 
-        right: "2vw", 
-        width: "35%", 
-        height: "75vh", 
-        display: "grid", 
-        gridTemplateRows: "1fr 1fr 1fr", 
+      <div className="right-col" role="complementary" style={{
+        position: "absolute",
+        top: "10vh",
+        right: "2vw",
+        width: "35%",
+        height: "75vh",
+        display: "grid",
+        gridTemplateRows: "0.25fr 0.4fr 0.35fr", /* Updated proportions: 25%, 40%, 35% */
         gap: "1.5vh",
         zIndex: 30
       }}>
-        {/* Top Module: Time and Weather Info */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "1fr 1fr", 
-          gap: "1vw",
-          height: "100%"
+        {/* Top Module: Combined Time and Weather Info */}
+        <div style={{
+          background: "linear-gradient(135deg, #013a63, #083b6d)",
+          borderRadius: 16,
+          padding: "1.2vw",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#f5faff",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
         }}>
-          <div style={{ height: "100%" }}>
-            <TimeDisplay />
+          <div style={{ 
+            fontSize: "clamp(1rem, 1.8vw, 2rem)", 
+            fontWeight: 700, 
+            marginBottom: "0.3vh",
+            lineHeight: 1.3,
+            letterSpacing: "0.5px",
+            opacity: 0.9,
+            textShadow: "0 0 8px rgba(255,255,255,0.2)"
+          }}>
+            {timeStr}
           </div>
-          <div style={{ height: "100%" }}>
-            <WeatherPanel location="Depok" temperature={31} condition="Cerah Berawan" weatherCode="sunny" />
+          <div style={{ 
+            fontSize: "clamp(0.7rem, 1.1vw, 0.9rem)", 
+            opacity: 0.85, 
+            marginBottom: "0.4vh",
+            textAlign: "center"
+          }}>
+            {dateStr}
+          </div>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "0.4vw", 
+            fontSize: "clamp(0.7rem, 1.1vw, 0.9rem)",
+            textAlign: "center"
+          }}>
+            <span>🌤️</span>
+            <span>{temperature}°C {condition} — Depok</span>
           </div>
         </div>
-        
+
         {/* Middle Module: Product & News */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "2fr 1fr", 
-          gap: "1vw",
-          height: "100%"
-        }}>
-          <div style={{ height: "100%" }}>
-            <ProductHighlight />
-          </div>
-          <div style={{ height: "100%" }}>
-            <NewsPanel />
-          </div>
-        </div>
-        
-        {/* Bottom Module: Economic Data with Mini Charts */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "1fr 1fr", 
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
           gap: "1vw",
           height: "100%"
         }}>
           <div style={{ 
-            display: "grid", 
-            gridTemplateRows: "1fr auto", 
-            gap: "0.8vh",
-            height: "100%"
+            background: "#062e55",
+            borderRadius: 16,
+            padding: "1vw",
+            color: "#f5faff",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
           }}>
-            <div style={{ height: "100%" }}>
+            <ProductHighlight />
+          </div>
+          <div style={{ 
+            background: "#062e55", 
+            borderRadius: 16, 
+            padding: "1vw",
+            color: "#f5faff",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
+          }}>
+            <NewsPanel />
+          </div>
+        </div>
+
+        {/* Bottom Module: Economic Data with Mini Charts */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1vw",
+          height: "100%"
+        }}>
+          <div style={{
+            background: "#062e55",
+            borderRadius: 16,
+            padding: "1vw",
+            color: "#f5faff",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
+          }}>
+            <div style={{ height: '60%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <RatePanel productId={playlist.find(i => i.type === "rate")?.productId} fallback={playlist.find(i => i.type === "rate")} />
             </div>
-            <div>
-              <MiniChart 
-                type="line" 
-                data={[6.7, 6.8, 6.9, 7.0, 6.9, 6.8, 6.85]} 
+            <div style={{ height: '40%', marginTop: "0.5vh" }}>
+              <MiniChart
+                type="line"
+                data={[6.7, 6.8, 6.9, 7.0, 6.9, 6.8, 6.85]}
                 title="Suku Bunga"
                 currentValue="6.85%"
-                color="#2ecc71"
+                color="#50c878"
                 period="7 hari"
               />
             </div>
           </div>
-          <div style={{ 
-            display: "grid", 
-            gridTemplateRows: "1fr auto", 
-            gap: "0.8vh",
-            height: "100%"
+          <div style={{
+            background: "#062e55",
+            borderRadius: 16,
+            padding: "1vw",
+            color: "#f5faff",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
           }}>
-            <div style={{ height: "100%" }}>
+            <div style={{ height: '60%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <EconPanel />
             </div>
-            <div>
-              <MiniChart 
-                type="line" 
-                data={[7120, 7135, 7150, 7145, 7160, 7155, 7165]} 
-                title="IHSG Trend"
-                currentValue="7165"
-                color="#3498db"
+            <div style={{ height: '40%', marginTop: "0.5vh" }}>
+              <MiniChart
+                type="line"
+                data={[7120, 7135, 7150, 7145, 7160, 7155, 7165]}
+                title="IHSG"
+                currentValue="7,165.00 ▲ +0.12%"
+                color="#00bcd4"
                 period="7 hari"
               />
             </div>

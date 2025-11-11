@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 const ProductHighlight = () => {
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  
+
   // Sample data - in a real implementation, this would come from an API
   const products = [
-    { id: 1, title: 'Kredit Usaha Mikro', subtitle: 'Suku bunga mulai', value: '8.5% p.a.' },
-    { id: 2, title: 'Deposito Berjangka', subtitle: 'Tenor fleksibel', value: '1–12 bulan' },
-    { id: 3, title: 'Kredit Kendaraan', subtitle: 'Bunga spesial', value: 'November' },
-    { id: 4, title: 'Asuransi Jiwa', subtitle: 'Perlindungan seumur hidup', value: 'Mulai Rp 100rb/bulan' }
+    { id: 1, title: 'Tabungan Simpanan', subtitle: 'Suku bunga', value: '8.5% p.a.', icon: '💰' },
+    { id: 2, title: 'Deposito', subtitle: 'Tenor', value: '1–12 bulan', icon: '🏦' },
+    { id: 3, title: 'Kredit Usaha', subtitle: 'Bunga spesial', value: 'Mulai 9.5%', icon: '💼' },
+    { id: 4, title: 'Asuransi', subtitle: 'Perlindungan', value: 'Seumur hidup', icon: '🛡️' }
   ];
 
   useEffect(() => {
@@ -23,59 +23,75 @@ const ProductHighlight = () => {
 
   return (
     <div className="product-highlight" style={{
-      background: 'linear-gradient(180deg, #073b68, #032b4f)',
-      color: 'white',
-      padding: '20px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
-      margin: '10px 0',
-      minHeight: '120px',
+      height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center'
+      justifyContent: 'space-between',
+      color: '#f5faff'
     }}>
-      <div style={{ marginBottom: '8px' }}>
-        <h3 style={{ 
-          margin: 0, 
-          fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)',
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: '0.8vh',
+        fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
+        opacity: 0.85
+      }}>
+        Produk Unggulan
+      </div>
+      
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '0.8vh 0'
+      }}>
+        <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', marginBottom: '0.6vh' }}>
+          {currentProduct.icon}
+        </div>
+        <h3 style={{
+          margin: 0,
+          fontSize: 'clamp(1rem, 1.8vw, 1.3rem)',
           fontWeight: 600,
-          color: '#f1c40f'
+          color: '#ffd166',
+          marginBottom: '0.4vh'
         }}>
           {currentProduct.title}
         </h3>
-      </div>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        fontSize: 'clamp(0.9rem, 2vw, 1.1rem)'
-      }}>
-        <div>
-          <div style={{ opacity: 0.9 }}>{currentProduct.subtitle}</div>
-          <div style={{ 
-            fontWeight: 'bold', 
-            fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
-            color: '#f1c40f',
-            marginTop: '4px'
-          }}>
-            {currentProduct.value}
-          </div>
+        <div style={{ 
+          fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
+          marginBottom: '0.3vh',
+          opacity: 0.9
+        }}>
+          {currentProduct.subtitle}
+        </div>
+        <div style={{
+          fontWeight: '700',
+          fontSize: 'clamp(1rem, 1.8vw, 1.4rem)',
+          color: '#50c878',
+          marginTop: '0.2vh'
+        }}>
+          {currentProduct.value}
         </div>
       </div>
+      
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        marginTop: '10px'
+        gap: '3px',
+        marginTop: '0.6vh',
+        padding: '0.3vh 0'
       }}>
         {products.map((_, idx) => (
           <div
             key={idx}
             style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: idx === currentProductIndex ? '#f1c40f' : 'rgba(255,255,255,0.3)',
-              margin: '0 4px'
+              width: idx === currentProductIndex ? '12px' : '6px',
+              height: '4px',
+              borderRadius: '2px',
+              backgroundColor: idx === currentProductIndex ? '#ffd166' : 'rgba(255,255,255,0.3)',
+              transition: 'width 0.3s ease'
             }}
           />
         ))}
