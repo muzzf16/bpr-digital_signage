@@ -5,6 +5,12 @@ import RatePanel from "./RatePanel";
 import EconPanel from "./EconPanel";
 import NewsTicker from "./NewsTicker";
 import VideoSlide from "./VideoSlide";
+import ProductHighlight from "./ProductHighlight";
+import TimeDisplay from "./TimeDisplay";
+import WeatherPanel from "./WeatherPanel";
+import MiniChart from "./MiniChart";
+import NewsPanel from "./NewsPanel";
+import Announcements from "./Announcements";
 
 // Constants
 const PLAYLIST_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -51,7 +57,11 @@ export default function Player({ deviceId }) {
   // Fetch playlist
   const fetchPlaylist = useCallback(async () => {
     try {
-      const res = await fetch(`/api/devices/${encodeURIComponent(deviceId)}/playlist?api_key=secret_dev_key`);
+      const res = await fetch(`/api/devices/${encodeURIComponent(deviceId)}/playlist`, {
+        headers: {
+          'x-api-key': 'secret_dev_key'
+        }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (j.playlist && Array.isArray(j.playlist.items)) {
@@ -247,33 +257,137 @@ export default function Player({ deviceId }) {
         <PromoCard item={currentItem.type === "promo" ? currentItem : promoItem} />
       </div>
 
-      <div className="right-col" role="complementary">
-        <div style={{ width: "100%", height: "100%" }}>
-          <RatePanel productId={playlist.find(i => i.type === "rate")?.productId} fallback={playlist.find(i => i.type === "rate")} />
+      {/* Announcements panel below the promo card */}
+      <div style={{ 
+        position: "absolute", 
+        top: "calc(10vh + 50%)", 
+        left: "2vw", 
+        width: "30%", 
+        zIndex: 31 
+      }}>
+        <Announcements deviceId={deviceId} />
+      </div>
+
+      <div className="right-col" role="complementary" style={{ 
+        position: "absolute", 
+        top: "10vh", 
+        right: "2vw", 
+        width: "35%", 
+        height: "75vh", 
+        display: "grid", 
+        gridTemplateRows: "1fr 1fr 1fr", 
+        gap: "1.5vh",
+        zIndex: 30
+      }}>
+        {/* Top Module: Time and Weather Info */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 1fr", 
+          gap: "1vw",
+          height: "100%"
+        }}>
+          <div style={{ height: "100%" }}>
+            <TimeDisplay />
+          </div>
+          <div style={{ height: "100%" }}>
+            <WeatherPanel location="Depok" temperature={31} condition="Cerah Berawan" weatherCode="sunny" />
+          </div>
         </div>
-        <div style={{ width: "100%", height: "100%" }}>
-          <EconPanel />
+        
+        {/* Middle Module: Product & News */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "2fr 1fr", 
+          gap: "1vw",
+          height: "100%"
+        }}>
+          <div style={{ height: "100%" }}>
+            <ProductHighlight />
+          </div>
+          <div style={{ height: "100%" }}>
+            <NewsPanel />
+          </div>
+        </div>
+        
+        {/* Bottom Module: Economic Data with Mini Charts */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 1fr", 
+          gap: "1vw",
+          height: "100%"
+        }}>
+          <div style={{ 
+            display: "grid", 
+            gridTemplateRows: "1fr auto", 
+            gap: "0.8vh",
+            height: "100%"
+          }}>
+            <div style={{ height: "100%" }}>
+              <RatePanel productId={playlist.find(i => i.type === "rate")?.productId} fallback={playlist.find(i => i.type === "rate")} />
+            </div>
+            <div>
+              <MiniChart 
+                type="line" 
+                data={[6.7, 6.8, 6.9, 7.0, 6.9, 6.8, 6.85]} 
+                title="Suku Bunga"
+                currentValue="6.85%"
+                color="#2ecc71"
+                period="7 hari"
+              />
+            </div>
+          </div>
+          <div style={{ 
+            display: "grid", 
+            gridTemplateRows: "1fr auto", 
+            gap: "0.8vh",
+            height: "100%"
+          }}>
+            <div style={{ height: "100%" }}>
+              <EconPanel />
+            </div>
+            <div>
+              <MiniChart 
+                type="line" 
+                data={[7120, 7135, 7150, 7145, 7160, 7155, 7165]} 
+                title="IHSG Trend"
+                currentValue="7165"
+                color="#3498db"
+                period="7 hari"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Slide overlay */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-        {currentItem.type === "image" && <ImageSlide url={currentItem.url} title={currentItem.title} />}
-        {currentItem.type === "economic" && <EconPanel />}
-        {currentItem.type === "rate" && <RatePanel productId={currentItem.productId} />}
-        {currentItem.type === "video" && (
-          <div style={{ width: "100%", height: "100%", pointerEvents: "auto" }}>
-            <VideoSlide
-              url={currentItem.url}
-              poster={currentItem.poster}
-              mute={!allowSound}
-              onEnded={() => scheduleNextTick(0)}
-              onError={() => scheduleNextTick(1000)}
-            />
-          </div>
-        )}
-      </div>
+     <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+  {currentItem.type === "image" && (
+    <div style={{ width: "100%", height: "100%" }}>
+      <ImageSlide url={currentItem.url} title={currentItem.title} />
+    </div>
+  )}
 
+  {currentItem.type === "economic" && (
+    <div style={{ width: "100%", height: "100%" }}>
+      <EconPanel />
+    </div>
+  )}
+
+  {/* NOTE: rate is intentionally NOT rendered here to avoid duplicate.
+      RatePanel is already visible inside the right column. */}
+
+  {currentItem.type === "video" && (
+    <div style={{ width: "100%", height: "100%", pointerEvents: "auto" }}>
+      <VideoSlide
+        url={currentItem.url}
+        poster={currentItem.poster}
+        mute={!allowSound}
+        onEnded={() => scheduleNextTick(0)}
+        onError={() => scheduleNextTick(1000)}
+      />
+    </div>
+  )}
+</div>
       {/* Footer Branding (center above ticker) - kept minimal since top branding exists */}
       {/* (optional: you can remove this block if you don't want duplicate branding at bottom) */}
       {/* <div style={{ position: 'absolute', left:0, right:0, bottom:'9vh', display:'flex', justifyContent:'center', zIndex:50 }}>

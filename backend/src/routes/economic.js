@@ -32,9 +32,9 @@ router.get("/", async (req, res) => {
         currencyRates,
         goldPrice,
         stockIndex,
+        news,
         updatedAt: new Date().toISOString()
-      },
-      news
+      }
     });
   } catch (err) {
     console.error("Economic route critical error", err);

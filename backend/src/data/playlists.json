@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "name": "Default Playlist",
+    "deviceId": "demo-tv-01",
+    "items": [
+      {
+        "type": "image",
+        "url": "/assets/images/slide1.jpg",
+        "duration": 15
+      },
+      {
+        "type": "video",
+        "url": "/assets/videos/video1.mp4",
+        "duration": 60
+      },
+      {
+        "type": "promo",
+        "title": "Special Promo",
+        "subtitle": "Get our special promo now!",
+        "image": "/assets/images/promo1.jpg"
+      },
+      {
+        "type": "rate",
+        "productId": "DEPOSITO"
+      }
+    ]
+  }
+]

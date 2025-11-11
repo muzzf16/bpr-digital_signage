@@ -2,6 +2,7 @@ import axios from 'axios';
 import xml2js from 'xml2js';
 import * as cheerio from 'cheerio';
 import { cached } from './cacheService.js';
+import mockData from '../data/mock.js';
 
 // Constants
 const DEFAULT_CURRENCY_REFRESH_SECONDS = 3600; // 1 hour
@@ -173,10 +174,10 @@ async function _fetchCurrencyRates() {
 
   console.warn('[Currency Provider] All providers failed. Returning mock data.');
   return { 
-    USD: 15600, 
-    SGD: 11600, 
-    JPY: 105.3, 
-    EUR: 17000, 
+    USD: mockData.economic.currencyRates.USD, 
+    SGD: mockData.economic.currencyRates.SGD, 
+    JPY: mockData.economic.currencyRates.JPY, 
+    EUR: mockData.economic.currencyRates.EUR, 
     source: 'mock', 
     fetchedAt: new Date().toISOString() 
   };
@@ -198,6 +199,28 @@ async function getCurrencyRates() {
 async function getGoldPrice() {
   const refreshSeconds = Number(process.env.REFRESH_GOLD_SECONDS || DEFAULT_GOLD_REFRESH_SECONDS);
   return cached('goldPrice', refreshSeconds, async () => {
+    // Try API-based approach first
+    try {
+      if (process.env.GOLD_API_KEY) {
+        const headers = {
+          'x-access-token': process.env.GOLD_API_KEY,
+          'Content-Type': 'application/json'
+        };
+        const response = await axios.get('https://www.goldapi.io/api/XAU/IDR', { headers });
+        if (response.status === 200 && response.data && response.data.price_gram) {
+          return {
+            gram: response.data.price_gram,
+            ounce: response.data.price_ounce,
+            fetchedAt: new Date().toISOString(),
+            source: 'goldapi.io'
+          };
+        }
+      }
+    } catch (error) {
+      console.warn('GoldAPI service error:', error.message);
+    }
+
+    // Fallback to web scraping
     try {
       const response = await axios.get('https://emasantam.id/harga-emas-antam-harian/');
       const html = response.data;
@@ -231,10 +254,10 @@ async function getGoldPrice() {
     } catch (error) {
       console.warn('EmasAntam scraping error:', error.message);
     }
-    
+
     return { 
-      gram: 1200000, 
-      ounce: 37200000, 
+      gram: mockData.economic.goldPrice.gram, 
+      ounce: mockData.economic.goldPrice.ounce, 
       source: 'mock', 
       fetchedAt: new Date().toISOString() 
     };
@@ -248,39 +271,127 @@ async function getGoldPrice() {
 async function getStockIndex() {
   const refreshSeconds = Number(process.env.REFRESH_STOCK_SECONDS || DEFAULT_STOCK_REFRESH_SECONDS);
   return cached('stockIndex', refreshSeconds, async () => {
-    if (process.env.GOAPI_API_KEY) {
-      try {
-        const response = await axios.get('https://api.goapi.io/stock/idx/indices', { 
-          headers: { 'X-API-KEY': process.env.GOAPI_API_KEY } 
-        });
-        
-        if (response.status === 200) {
-          const indices = response.data.data;
-          const ihsg = indices.find(index => index.symbol === 'COMPOSITE');
-
-          if (ihsg) {
-            return { 
-              symbol: ihsg.symbol, 
-              name: ihsg.name, 
-              price: ihsg.last, 
-              change: ihsg.change_percentage, 
-              fetchedAt: new Date().toISOString(), 
-              source: 'goapi.io' 
-            };
-          }
+    // Try API-based approach first
+    try {
+      if (process.env.YAHOO_FINANCE_API_URL) {
+        const response = await axios.get(`${process.env.YAHOO_FINANCE_API_URL}/v6/finance/quote?symbols=JKSE.JK`);
+        if (response.status === 200 && response.data && response.data.quoteResponse?.result?.length > 0) {
+          const result = response.data.quoteResponse.result[0];
+          return {
+            symbol: result.symbol,
+            name: 'IHSG',
+            price: result.regularMarketPrice,
+            change: result.regularMarketChange,
+            changePercent: result.regularMarketChangePercent,
+            fetchedAt: new Date().toISOString(),
+            source: 'yahoo.finance'
+          };
         }
-      } catch (error) {
-        console.warn('GOAPI.IO error:', error.message);
       }
+    } catch (error) {
+      console.warn('Yahoo Finance API error:', error.message);
+    }
+
+    // Alternative API approach
+    try {
+      const response = await axios.get('https://api.stockdata.org/v1/data/quote?symbols=JKSE.JK&api_token=' + (process.env.STOCKDATA_API_TOKEN || ''));
+      if (response.status === 200 && response.data && response.data.data?.length > 0) {
+        const result = response.data.data[0];
+        return {
+          symbol: result.symbol,
+          name: 'IHSG',
+          price: result.price,
+          change: result.change,
+          changePercent: result.change_percent,
+          fetchedAt: new Date().toISOString(),
+          source: 'stockdata.org'
+        };
+      }
+    } catch (error) {
+      console.warn('StockData.org API error:', error.message);
     }
     
-    return { 
-      symbol: '^JKSE', 
-      name: 'IHSG', 
-      price: 7115.23, 
-      change: '+0.34%', 
-      fetchedAt: new Date().toISOString(), 
-      source: 'mock' 
+    // Fallback to web scraping - improved selectors
+    try {
+      const response = await axios.get('https://www.google.com/finance/quote/COMPOSITE:IDX');
+      const html = response.data;
+      const $ = cheerio.load(html);
+
+      // Try multiple selector patterns for price
+      const selectors = [
+        'div[data-entity-id="COMPOSITE:IDX"] div[data-source="COMPOSITE (IDX)"]:first',
+        'div[data-entity-id="COMPOSITE:IDX"] div[data-source="COMPOSITE (IDX)"] > span',
+        'div[data-entity-id="COMPOSITE:IDX"] > div > div > div > span',
+        'div[data-entity-id="COMPOSITE:IDX"] .YMlKec.fxKbKc',
+        '[data-entity-id="COMPOSITE:IDX"] .IsqQVc.NprOob.XWZjwc',
+        '[data-entity-id="COMPOSITE:IDX"] .IsqQVc span'
+      ];
+      
+      let price = '';
+      for (const selector of selectors) {
+        price = $(selector).first().text().trim();
+        if (price) break;
+      }
+
+      // Try multiple selector patterns for change
+      const changeSelectors = [
+        'div[data-entity-id="COMPOSITE:IDX"] .P2LhUc span[data-is-arrow]',
+        'div[data-entity-id="COMPOSITE:IDX"] .P2LhUy span.JwB6zf',
+        'div[data-entity-id="COMPOSITE:IDX"] .P2LhUy span',
+        '[data-entity-id="COMPOSITE:IDX"] .gNCpzf span'
+      ];
+      
+      let change = '';
+      for (const selector of changeSelectors) {
+        change = $(selector).first().text().trim();
+        if (change) break;
+      }
+
+      if (price && change) {
+        return {
+          symbol: 'COMPOSITE',
+          name: 'IHSG',
+          price: parseFloat(price.replace(/,/g, '').replace(/[^\d.-]/g, '')),
+          change: change,
+          fetchedAt: new Date().toISOString(),
+          source: 'google.com/finance'
+        };
+      }
+    } catch (error) {
+      console.warn('Google Finance scraping error:', error.message);
+    }
+
+    // Another fallback - using Yahoo Finance directly
+    try {
+      const response = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/^JKSE?interval=1d');
+      if (response.status === 200 && response.data?.chart?.result?.length > 0) {
+        const result = response.data.chart.result[0];
+        const price = result.meta.regularMarketPrice;
+        const previousClose = result.meta.previousClose;
+        const change = price - previousClose;
+        const changePercent = (change / previousClose) * 100;
+
+        return {
+          symbol: '^JKSE',
+          name: 'IHSG',
+          price: price,
+          change: change.toFixed(2),
+          changePercent: changePercent.toFixed(2) + '%',
+          fetchedAt: new Date().toISOString(),
+          source: 'yahoo.finance.chart'
+        };
+      }
+    } catch (error) {
+      console.warn('Yahoo Finance chart API error:', error.message);
+    }
+
+    return {
+      symbol: '^JKSE',
+      name: 'IHSG',
+      price: mockData.economic.stockIndex.IHSG,
+      change: mockData.economic.stockIndex.Change,
+      fetchedAt: new Date().toISOString(),
+      source: 'mock'
     };
   });
 }

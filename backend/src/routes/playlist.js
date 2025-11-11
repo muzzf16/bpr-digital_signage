@@ -1,36 +1,24 @@
 import express from 'express';
-import strapiService from '../services/strapiService.js';
-import mock from '../data/mock.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 const router = express.Router();
+const dataPath = path.resolve(process.cwd(), 'src', 'data', 'playlists.json');
 
-// Get playlist for a specific device
+// Get playlist by device ID
 router.get('/:deviceId/playlist', async (req, res) => {
-  const { deviceId } = req.params;
-  
   try {
-    // Try to fetch from Strapi first
-    const playlist = await strapiService.getPlaylistByDeviceId(deviceId);
-
+    const { deviceId } = req.params;
+    const data = await fs.readFile(dataPath, 'utf-8');
+    const playlists = JSON.parse(data);
+    const playlist = playlists.find(p => p.deviceId === deviceId);
     if (playlist) {
-      res.json({ 
-        success: true, 
-        playlist 
-      });
+      res.json({ success: true, playlist });
     } else {
-      // Fallback to mock data if Strapi fails or returns nothing
-      console.warn(`[Playlist] Could not find playlist for device '${deviceId}' in Strapi. Falling back to mock data.`);
-      res.json({ 
-        success: true, 
-        playlist: mock.playlist 
-      });
+      res.status(404).json({ success: false, message: 'Playlist not found' });
     }
   } catch (error) {
-    console.error('[Playlist] Error fetching playlist:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error while fetching playlist' 
-    });
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 

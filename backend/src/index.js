@@ -4,9 +4,10 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import playlistRouter from './routes/playlist.js';
-import ratesRouter from './routes/rates.js';
 import economicRouter from './routes/economic.js';
+import adminPlaylistsRouter from './routes/admin/playlists.js';
+import adminRatesRouter from './routes/admin/rates.js';
+import playlistRouter from './routes/playlist.js';
 
 // Constants
 const PORT = process.env.PORT || 4000;
@@ -30,9 +31,9 @@ app.use((req, res, next) => {
     if (req.path === '/' || req.path.startsWith(`/${ASSETS_PATH}`)) {
       return next();
     }
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Unauthorized: missing or invalid API key' 
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized: missing or invalid API key'
     });
   }
   next();
@@ -43,9 +44,9 @@ app.use(`/${ASSETS_PATH}`, express.static(path.join(__dirname, '..', ASSETS_PATH
 
 // Routes
 app.use('/api/devices', playlistRouter);
-app.use('/api/rates', ratesRouter);
+app.use('/api/admin/playlists', adminPlaylistsRouter);
+app.use('/api/admin/rates', adminRatesRouter);
 app.use('/api/economic', economicRouter);
-
 app.get('/', (req, res) => {
   res.json({ 
     success: true, 

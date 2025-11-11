@@ -4,6 +4,13 @@
 
 The BPR Digital Signage System is a modern, centralized, and secure digital information display application developed for Bank Perkreditan Rakyat (BPR). The system enables real-time display of promotional products, savings/deposit interest rates, and economic information on branch TV screens.
 
+## Conversation Context
+
+Date: Selasa, 11 November 2025
+OS: Windows (win32)
+Project Directory: D:\bpr_signage
+Active File: D:\bpr_signage\frontend\src\components\EconPanel.jsx
+
 ### Core Features
 - **Promotional Content**: Display promotional media and bank branding
 - **Interest Rate Information**: Real-time savings and deposit rates connected to CMS
