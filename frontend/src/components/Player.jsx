@@ -208,34 +208,33 @@ export default function Player({ deviceId }) {
     image: "/assets/demo.jpg"
   };
 
+  const SkeletonBar = () => (
+    <div style={{ height: 8, width: '60%', background: 'linear-gradient(90deg, #083b59, #0b5b7a)', borderRadius: 6, marginBottom: 4 }} />
+  );
+
   return (
     <div className="player relative" role="main" aria-live="polite" ref={containerRef} tabIndex={0}>
 
       {/* -------------------------
           TOP BAR: Branding (left) + Clock (right)
          ------------------------- */}
-      <div style={{ position: "absolute", top: "2vh", left: "2vw", zIndex: 60 }}>
+      <div className="branding">
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "1vw",
-            background: "linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0))",
-            padding: "0.6vw 1vw",
-            borderRadius: 16,
-            backdropFilter: "blur(8px)"
+            gap: "1vw"
           }}
         >
           <img
             src="/assets/logo-bpr.png"
             alt="Logo Bank Perekonomian Rakyat"
             onError={(e) => (e.currentTarget.style.display = "none")}
-            style={{ width: "clamp(48px, 6vw, 96px)", height: "auto", objectFit: "contain" }}
           />
-          <div style={{ color: "#f5faff", fontWeight: 800, lineHeight: 1 }}>
-            <div style={{ fontSize: "clamp(0.9rem, 1.8vw, 1.6rem)" }}>Bank</div>
-            <div style={{ fontSize: "clamp(1.2rem, 2.4vw, 2.8rem)", color: "#ffd166" }}>Perekonomian Rakyat</div>
-            <div style={{ fontSize: "clamp(0.7rem, 1vw, 0.8rem)", color: "#f5faff", opacity: 0.75, marginTop: "0.2vh" }}>
+          <div>
+            <div>Bank</div>
+            <div>Perekonomian Rakyat</div>
+            <div>
               Solusi Keuangan Masyarakat — Aman & Terpercaya
             </div>
           </div>
@@ -265,7 +264,62 @@ export default function Player({ deviceId }) {
           MAIN LAYOUT (promo left, panels right)
          ------------------------- */}
       <div className="promo-card" aria-hidden={false}>
-        <PromoCard item={currentItem.type === "promo" ? currentItem : promoItem} />
+        <div style={{
+          display: "flex",
+          gap: "clamp(12px,1.6vw,24px)",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          width: "100%",
+          height: "100%"
+        }}>
+          <div style={{
+            color: "var(--p-white)",
+            flex: "1 1 60%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center"
+          }}>
+            <div style={{
+              fontSize: "clamp(2.2rem, 6.5vw, 5.2rem)",
+              margin: "0 0 .4em",
+              fontWeight: 700,
+              letterSpacing: "-1px",
+              lineHeight: 1.02,
+              wordBreak: "break-word"
+            }}>
+              {currentItem.type === "promo" ? currentItem.title || promoItem.title : promoItem.title}
+            </div>
+            <div style={{
+              fontSize: "clamp(1rem, 2.4vw, 3.2rem)",
+              margin: 0,
+              opacity: 0.95,
+              lineHeight: 1.2
+            }}>
+              {currentItem.type === "promo" ? currentItem.subtitle || promoItem.subtitle : promoItem.subtitle}
+            </div>
+          </div>
+          <div style={{
+            width: "clamp(240px,25vw,520px)",
+            height: "100%",
+            borderRadius: 12,
+            overflow: "hidden",
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center"
+          }}>
+            <img
+              src={currentItem.type === "promo" ? currentItem.image || promoItem.image : promoItem.image}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: "translateY(6%)"
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Announcements panel below the promo card */}

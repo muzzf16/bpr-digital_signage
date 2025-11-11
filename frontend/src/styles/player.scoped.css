@@ -1,0 +1,261 @@
+/* player.scoped.css
+   Scoped styles for Player (digital signage).
+   Import this file only in the Player root/component.
+*/
+
+/* Player root scoping */
+.player-root {
+  --p-bg: #042a57;
+  --p-panel: #063a6a;
+  --p-accent: #ff6b4a;
+  --p-muted: #bcd2f5;
+  --p-white: #ffffff;
+  --p-gold: #ffd166;
+  --p-font-sans: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  font-family: var(--p-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width:100vw;
+  height:100vh;
+  color: var(--p-white);
+  background: var(--p-bg);
+  box-sizing: border-box;
+}
+
+/* the main grid used by the player */
+.player-root .player {
+  height:100%;
+  padding: clamp(8px,1.6vw,24px);
+  padding-top: calc(clamp(8px,1.6vw,24px) + var(--safe-top));
+  padding-bottom: calc(clamp(8px,1.6vw,24px) + var(--safe-bottom));
+  padding-left: calc(clamp(8px,1.6vw,24px) + var(--safe-left));
+  padding-right: calc(clamp(8px,1.6vw,24px) + var(--safe-right));
+  display:grid;
+  grid-template-columns: 1.6fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: clamp(8px,1.2vw,20px);
+  align-items:stretch;
+}
+
+/* Promo card (left) */
+.player-root .promo-card {
+  grid-column:1/2;
+  grid-row:1/2;
+  background: linear-gradient(180deg, var(--p-accent), #ff855f);
+  border-radius: 20px;
+  padding: clamp(16px, 2vw, 28px);
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  position:relative;
+  overflow:hidden;
+}
+
+/* Branding header positioning */
+.player-root .branding {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 2vh);
+  left: calc(var(--safe-left, 0px) + 2vw);
+  z-index: 60;
+  padding: clamp(0.5vw,0.6vh,1vw) clamp(1vw,1vh,1.2vw);
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0));
+  backdrop-filter: blur(8px);
+}
+.player-root .branding img {
+  width: clamp(48px, 6vw, 96px);
+  height: auto;
+  object-fit: contain;
+}
+.player-root .branding div {
+  color: var(--p-white);
+  font-weight: 800;
+  line-height: 1;
+}
+.player-root .branding div:first-child {
+  font-size: clamp(0.9rem, 1.8vw, 1.6rem);
+}
+.player-root .branding div:nth-child(2) {
+  font-size: clamp(1.2rem, 2.4vw, 2.8rem);
+  color: var(--p-gold);
+}
+.player-root .branding div:last-child {
+  font-size: clamp(0.7rem, 1vw, 0.8rem);
+  color: var(--p-white);
+  opacity: 0.75;
+  margin-top: clamp(0.1vh, 0.2vw, 0.2vh);
+}
+
+/* Clock panel positioning */
+.player-root .clock-panel {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 2vh);
+  right: calc(var(--safe-right, 0px) + 2vw);
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  padding: 0.6vw 1vw;
+  text-align: right;
+  color: var(--p-white);
+}
+.player-root .clock-time {
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  font-weight: 700;
+}
+.player-root .clock-date {
+  font-size: clamp(0.8rem, 1.4vw, 1rem);
+  opacity: 0.85;
+}
+
+/* Promo text and media */
+.player-root .promo-text { color:var(--p-white); flex:1 1 60%; }
+.player-root .promo-title { 
+  font-size:clamp(2rem, 4vw, 4.5rem); 
+  margin:0 0 .4em; 
+  font-weight:700; 
+  letter-spacing:-1px; 
+  line-height: 1.02;
+  word-break: break-word;
+}
+.player-root .promo-sub { 
+  font-size:clamp(1rem, 2.4vw, 3.2rem); 
+  margin:0; 
+  opacity:0.95;
+  line-height: 1.2;
+}
+.player-root .promo-media{ width:clamp(240px,25vw,520px); height:100%; border-radius:12px; overflow:hidden; flex-shrink:0; display:flex; align-items:end; justify-content:center; }
+.player-root .promo-media img{ width:100%; height:100%; object-fit:cover; transform: translateY(6%); }
+
+/* Right column */
+.player-root .right-col { grid-column:2/3; grid-row:1/2; display:grid; grid-template-rows: 1fr 1fr; gap: clamp(8px,1.2vw,16px); }
+
+/* Rate panel */
+.player-root .rate-panel {
+  background: linear-gradient(180deg, var(--p-panel), #0b4b79);
+  border-radius:16px;
+  padding: clamp(14px,1.8vw,22px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 6px 16px rgba(0,0,0,0.35);
+}
+.player-root .rate-label { font-size:clamp(1.1rem,1.8vw,2rem); opacity:0.9; margin-bottom:.25em; }
+.player-root .rate-value { font-size:clamp(3.6rem,6.5vw,8rem); font-weight:800; color:var(--p-gold); line-height:0.9; }
+
+/* Economy panel */
+.player-root .econ-panel {
+  background: linear-gradient(180deg,#083659,#053b57);
+  border-radius:16px;
+  padding: clamp(12px,1.6vw,20px);
+  display:flex;
+  flex-direction:column;
+  gap:clamp(8px,1.2vw,14px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.32);
+}
+.player-root .econ-row { display:flex; justify-content:space-between; align-items:center; font-size:clamp(1.2rem,1.9vw,2.2rem); }
+.player-root .econ-row .label { color:var(--p-muted); font-weight:600; }
+.player-root .econ-row .value { font-weight:700; color:var(--p-white); }
+
+/* ticker */
+.player-root .ticker {
+  grid-column:1/3;
+  grid-row:2/3;
+  background: linear-gradient(90deg,#021827,#073b56);
+  padding: clamp(10px,1.2vw,14px);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  box-shadow:0 6px 12px rgba(0,0,0,0.35);
+  z-index: 60; /* Increased z-index to ensure it appears above video slides */
+  bottom: calc(var(--safe-bottom, 0px) + clamp(10px,1.2vw,14px));
+  pointer-events: none; /* Allow clicks to pass through */
+}
+.player-root .ticker .marquee {
+  white-space:nowrap;
+  display:inline-block;
+  padding-left:120%;
+  animation: scroll 60s linear infinite; /* Slower animation */
+  font-size:clamp(1rem,1.6vw,1.8rem);
+  color:var(--p-muted);
+}
+ @keyframes scroll { 0%{ transform:translateX(0);} 100%{ transform:translateX(-100%);} }
+
+/* Ticker z-index improvement */
+.player-root .ticker { z-index: 60; pointer-events: none; }
+
+/* Slide transitions */
+.player-root .player-slide-enter {
+  opacity: 0;
+  transform: scale(1.02);
+}
+.player-root .player-slide-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.player-root .player-slide-exit {
+  opacity: 1;
+}
+.player-root .player-slide-exit-active {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Shimmer animation for skeleton loading */
+.player-root .skeleton-bar {
+  background: linear-gradient(90deg, #0b3b55 25%, #125a7c 50%, #0b3b55 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+ @keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Promo text responsive sizing */
+.player-root .promo-text { color:var(--p-white); flex:1 1 60%; }
+.player-root .promo-title {
+  font-size:clamp(2rem, 4vw, 4.5rem);
+  margin:0 0 .4em;
+  font-weight:700;
+  letter-spacing:-1px;
+  line-height: 1.02;
+  word-break: break-word;
+}
+
+/* Promo badge positioning */
+.player-root .promo-badge {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 62;
+  pointer-events: none;
+}
+
+/* Loading skeletons */
+.player-root .skeleton-bar {
+  height: 12px;
+  background: linear-gradient(90deg, #092233, #0b3b55);
+  border-radius: 6px;
+  width: 60%;
+}
+
+/* Responsive smaller screens */
+ @media (max-width: 1100px) {
+  .player-root .player { grid-template-columns: 1fr; grid-template-rows: 1fr 0.9fr auto; }
+  .player-root .promo-card { grid-column:1/2; grid-row:1/2; }
+  .player-root .right-col { grid-column:1/2; grid-row:2/3; grid-template-columns:1fr 1fr; grid-template-rows:1fr; }
+  .player-root .ticker { grid-column:1/2; }
+  .player-root .promo-media { display:none; }
+  .player-root .promo-badge { display:none; }
+}

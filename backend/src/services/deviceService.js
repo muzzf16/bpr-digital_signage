@@ -70,6 +70,17 @@ const deviceService = {
     const device = await this.getDeviceById(id);
     query(sql, [id]);
     return device;
+  },
+
+  // Assign playlist to device
+  async assignPlaylistToDevice(deviceId, playlistId) {
+    const sql = `UPDATE devices SET playlist_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+    const result = query(sql, [playlistId, deviceId]);
+    
+    if (result.changes > 0) {
+      return this.getDeviceById(deviceId);
+    }
+    return null;
   }
 };
 

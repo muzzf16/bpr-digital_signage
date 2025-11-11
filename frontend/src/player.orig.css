@@ -1,0 +1,338 @@
+:root{
+  --bg:#042a57;         /* primary deep blue */
+  --panel:#063a6a;      /* panel mid-blue */
+  --accent:#ff6b4a;     /* promo accent */
+  --muted:#bcd2f5;
+  --white:#ffffff;
+  --gold:#ffd166;
+  --font-sans: Inter, "Segoe UI", Roboto, Arial, system-ui, sans-serif;
+}
+
+/* safe-area (for TVs with overscan / mobile notch) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* full-screen + safe area */
+html,body,#root{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  font-family:var(--font-sans);
+  color:var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-smooth: always;
+}
+*{box-sizing:border-box}
+
+/* Container grid for 16:9 signage */
+.player{
+  width:100vw;
+  height:100vh;
+  padding:clamp(8px,1.6vw,24px);
+  padding-top: calc(clamp(8px,1.6vw,24px) + var(--safe-top));
+  padding-bottom: calc(clamp(8px,1.6vw,24px) + var(--safe-bottom));
+  padding-left: calc(clamp(8px,1.6vw,24px) + var(--safe-left));
+  padding-right: calc(clamp(8px,1.6vw,24px) + var(--safe-right));
+  display:grid;
+  grid-template-columns: 1.6fr 1fr; /* left big, right column */
+  grid-template-rows: 1fr auto;    /* main and ticker row */
+  gap: clamp(8px,1.2vw,20px);
+  align-items:stretch;
+}
+
+/* Left: promo card */
+.promo-card{
+  grid-column:1/2;
+  grid-row:1/2;
+  background: linear-gradient(180deg, var(--accent), #ff855f);
+  border-radius: 20px;
+  padding: clamp(18px,2.4vw,36px);
+  display:flex;
+  gap:clamp(12px,1.6vw,24px);
+  align-items:center;
+  justify-content:flex-start;
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  position:relative;
+  overflow:hidden;
+}
+
+/* Promo text */
+.promo-text{
+  color:var(--white);
+  flex:1 1 60%;
+}
+.promo-title{ font-size:clamp(2.2rem,4.2vw,5.2rem); margin:0 0 .2em; font-weight:700; letter-spacing:-0.6px; line-height:0.95; }
+.promo-sub{ font-size:clamp(1.2rem,2.2vw,3.2rem); margin:0; opacity:0.95; }
+
+/* Promo image - right side inside card (cropped) */
+.promo-media{
+  width:clamp(220px,24vw,520px);
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  flex-shrink:0;
+  display:flex;
+  align-items:end;
+  justify-content:center;
+}
+.promo-media img{ width:100%; height:100%; object-fit:cover; transform: translateY(6%); }
+
+/* Right column - stacked panels */
+.right-col{
+  grid-column:2/3;
+  grid-row:1/2;
+  display:grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: clamp(8px,1.2vw,16px);
+}
+
+/* Rate panel (top-right) */
+.rate-panel{
+  background: linear-gradient(180deg, var(--panel), #0b4b79);
+  border-radius:16px;
+  padding: clamp(14px,1.8vw,22px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 6px 16px rgba(0,0,0,0.35);
+  position:relative;
+  overflow:hidden;
+}
+.rate-label{ font-size:clamp(1.1rem,1.8vw,2rem); opacity:0.95; margin-bottom:.25em; }
+.rate-value{ font-size:clamp(3rem,6.5vw,7.5rem); font-weight:800; color:var(--gold); line-height:0.9; }
+
+/* subtle pulse highlight (non-intrusive) */
+.rate-value::after{
+  content: '';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  box-shadow: inset 0 0 60px rgba(255,209,102,0.02);
+}
+
+/* Economy panel (bottom-right) */
+.econ-panel{
+  background: linear-gradient(180deg,#083659,#053b57);
+  border-radius:16px;
+  padding: clamp(12px,1.6vw,20px);
+  display:flex;
+  flex-direction:column;
+  gap:clamp(8px,1.2vw,14px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.32);
+  min-height:0; /* ensures flex children can shrink on small screens */
+}
+.econ-row{ display:flex; justify-content:space-between; align-items:center; font-size:clamp(1rem,1.6vw,1.8rem); }
+.econ-row .label{ color:var(--muted); font-weight:600; }
+.econ-row .value{ font-weight:700; color:var(--white); }
+
+/* ticker bar bottom */
+.ticker{
+  grid-column:1/3;
+  grid-row:2/3;
+  background: linear-gradient(90deg,#021827,#073b56);
+  padding: clamp(10px,1.2vw,14px);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  box-shadow:0 6px 12px rgba(0,0,0,0.35);
+}
+
+/* marquee improved: duplicate content handled in JS component for better sizing.
+   This is a safe CSS fallback scroll (transform-only for performance). */
+.ticker .marquee{
+  white-space:nowrap;
+  display:inline-block;
+  padding-left:100%;
+  animation:scroll 32s linear infinite;
+  font-size:clamp(1rem,1.4vw,1.6rem);
+  color:var(--muted);
+  will-change:transform;
+}
+@keyframes scroll{
+  0%{ transform:translateX(0); }
+  100%{ transform:translateX(-100%); }
+}
+
+/* News panel animation */
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* General animation for announcements */
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* reduce motion preference */
+@media (prefers-reduced-motion: reduce){
+  .ticker .marquee, .news-ticker__track, .news-panel .news-item { animation: none !important; transition: none !important; }
+}
+
+/* Product highlight panel */
+.product-highlight{
+  background: linear-gradient(180deg, #082f57, #031c35);
+  color: var(--white);
+  padding: clamp(12px,1.6vw,20px);
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+  position:relative;
+  overflow:hidden;
+  min-height:0;
+  height:100%;
+}
+
+.product-highlight h3 {
+  color: var(--gold);
+  margin: 0 0 0.5em 0;
+  font-size:clamp(1.1rem,2.5vw,1.5rem);
+  font-weight:600;
+}
+
+/* Location info panel */
+.location-info {
+  background: linear-gradient(180deg, #082f57, #031c35);
+  color: var(--white);
+  padding: clamp(10px,1.2vw,16px);
+  border-radius:16px;
+  font-size:clamp(0.9rem,1.2vw,1rem);
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+  height:100%;
+}
+
+.location-info strong {
+  color: var(--gold);
+}
+
+/* Mini chart panel */
+.mini-chart {
+  background: linear-gradient(180deg, #082f57, #031c35);
+  color: var(--white);
+  padding: clamp(10px,1.2vw,16px);
+  border-radius:16px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+  height:100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-chart-title {
+  font-weight: bold;
+  font-size:clamp(0.8rem,1.1vw,0.9rem);
+  margin-bottom:4px;
+}
+
+.mini-chart-value {
+  color: var(--gold);
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+/* News panel */
+.news-panel {
+  background: linear-gradient(180deg, #082f57, #031c35);
+  color: var(--white);
+  border-radius:16px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.news-panel > div {
+  padding: clamp(10px,1.2vw,16px);
+}
+
+.news-panel .news-header {
+  background: rgba(0,0,0,0.2);
+  padding: clamp(8px,1vw,12px);
+  border-radius: 12px 12px 0 0;
+  font-weight: bold;
+  font-size:clamp(0.9rem,1.2vw,1rem);
+}
+
+.news-panel .news-content {
+  flex: 1;
+  display:flex;
+  align-items:center;
+}
+
+.news-panel .news-item {
+  font-size:clamp(0.8rem,1.1vw,0.95rem);
+}
+
+.news-panel .news-item strong {
+  color: var(--gold);
+  display:block;
+  margin-bottom:2px;
+}
+
+.news-panel .news-indicators {
+  display:flex;
+  justify-content:center;
+  padding:8px;
+  background: rgba(0,0,0,0.2);
+}
+
+/* Announcements panel */
+.announcements-panel {
+  background: linear-gradient(180deg, #082f57, #031c35);
+  color: var(--white);
+  padding: clamp(10px,1.2vw,16px);
+  border-radius:16px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+}
+
+/* Time display with numeric font */
+.time-display {
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+}
+
+/* small responsive adjustments for narrow screens */
+@media (max-width: 1100px){
+  .player{ grid-template-columns: 1fr; grid-template-rows: 1fr 0.9fr auto; }
+  .promo-card{ grid-column:1/2; grid-row:1/2; border-radius:12px; padding:clamp(12px,2vw,18px); }
+  .right-col{ grid-column:1/2; grid-row:2/3; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr 1fr; gap:8px; }
+  .ticker{ grid-column:1/2; }
+  .promo-media{ display:none; }
+  .promo-title{ font-size:clamp(1.6rem,3.8vw,3.2rem); }
+
+  /* Responsive adjustments for new components */
+  .product-highlight, .location-info, .mini-chart, .news-panel {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+
+  .product-highlight h3 {
+    font-size: 1rem;
+  }
+}
+
+/* utility: accessible hidden for screen readers where needed */
+.sr-only{
+  position:absolute!important;
+  height:1px; width:1px;
+  overflow:hidden; clip:rect(1px,1px,1px,1px);
+  white-space:nowrap; border:0; padding:0; margin:-1px;
+}

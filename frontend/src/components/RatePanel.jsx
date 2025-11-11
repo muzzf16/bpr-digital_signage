@@ -40,41 +40,68 @@ export default function RatePanel({ productId, fallback }) {
   };
 
   if (loading && !rate) {
-    // Loading state - showing a small progress bar instead of text
+    // Loading state - skeleton loading bars
     return (
-      <div className="rate-panel" style={{
+      <div className="rate-panel" role="region" aria-label="Loading interest rates" style={{
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         height: '100%',
-        alignItems: 'center',
-        color: '#f5faff'
+        color: '#f5faff',
+        textAlign: 'center'
       }}>
-        <div style={{ 
-          fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)',
-          marginBottom: '0.5vh'
-        }}>
-          Memuat suku bunga...
-        </div>
-        {/* Small loading animation */}
         <div style={{
-          width: '60%',
-          height: '4px',
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          borderRadius: '2px',
-          overflow: 'hidden'
+          fontSize: 'clamp(0.7rem, 1vw, 0.8rem)',
+          fontWeight: '600',
+          opacity: 0.85,
+          marginBottom: '0.4vh'
         }}>
-          <div style={{
-            width: '30%',
-            height: '100%',
-            backgroundColor: '#50c878',
-            animation: 'loading 1.5s infinite ease-in-out'
-          }}></div>
+          Suku Bunga Terbaru
+        </div>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.6vh',
+          padding: '0.8vh 0'
+        }}>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '0.1vh 0'
+            }}>
+              <div style={{
+                width: '50%',
+                height: '0.8rem',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: '0.4rem',
+                animation: 'pulse 1.5s infinite ease-in-out'
+              }} />
+              <div style={{
+                width: '30%',
+                height: '0.8rem',
+                backgroundColor: 'rgba(80,200,120,0.1)',
+                borderRadius: '0.4rem',
+                animation: 'pulse 1.5s infinite ease-in-out'
+              }} />
+            </div>
+          ))}
+        </div>
+        <div style={{
+          fontSize: 'clamp(0.5rem, 0.7vw, 0.6rem)',
+          opacity: 0.6,
+          textAlign: 'center',
+          marginTop: '0.4vh',
+          paddingTop: '0.3vh',
+          borderTop: '1px solid rgba(255,255,255,0.2)'
+        }}>
+          Memuat...
         </div>
         <style>{`
-          @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
+          @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
           }
         `}</style>
       </div>
