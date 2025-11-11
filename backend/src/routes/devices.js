@@ -1,0 +1,158 @@
+import express from 'express';
+import playlistService from '../services/playlistService.js';
+import productService from '../services/productService.js';
+import promoService from '../services/promoService.js';
+import announcementService from '../services/announcementService.js';
+import deviceService from '../services/deviceService.js';
+
+const router = express.Router();
+
+// Get playlist for a specific device
+router.get('/:deviceId/playlist', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    
+    // Get device information
+    const device = await deviceService.getDeviceById(deviceId);
+    if (!device) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Device not found' 
+      });
+    }
+    
+    // Update last seen timestamp
+    await deviceService.updateDeviceLastSeen(deviceId);
+    
+    // Get playlist ID for the device
+    const playlistId = device.playlist_id;
+    if (!playlistId) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No playlist assigned to device' 
+      });
+    }
+    
+    // Get playlist with items
+    const playlist = await playlistService.getPlaylistWithItems(playlistId);
+    if (!playlist) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Playlist not found' 
+      });
+    }
+    
+    // Resolve items by fetching additional data as needed
+    const resolvedItems = [];
+    for (const item of playlist.items) {
+      const baseItem = {
+        id: item.id,
+        type: item.item_type,
+        duration: item.duration_sec,
+        metadata: item.metadata || {}
+      };
+      
+      // Resolve item-specific data
+      if (item.item_type === 'product' && item.item_ref) {
+        const product = await productService.getProductById(item.item_ref);
+        if (product) {
+          baseItem.product = { 
+            id: product.id, 
+            name: product.name, 
+            interestRate: product.interest_rate,
+            currency: product.currency,
+            terms: product.terms
+          };
+        }
+      } else if (item.item_type === 'promo' && item.item_ref) {
+        const promo = await promoService.getPromoById(item.item_ref);
+        if (promo) {
+          baseItem.promo = { 
+            id: promo.id, 
+            title: promo.title, 
+            subtitle: promo.subtitle,
+            body: promo.body
+          };
+        }
+      } else if (item.item_type === 'image' || item.item_type === 'video') {
+        // For image/video items, use URL from metadata or construct one
+        // Parse metadata from JSON string if needed
+        let parsedMetadata = item.metadata;
+        if (typeof item.metadata === 'string') {
+          try {
+            parsedMetadata = JSON.parse(item.metadata);
+          } catch (e) {
+            parsedMetadata = {};
+          }
+        }
+        
+        baseItem.url = parsedMetadata?.url || parsedMetadata?.asset_url || `/public/uploads/${item.item_ref}`;
+      }
+      
+      // Add to resolved items
+      resolvedItems.push(baseItem);
+    }
+    
+    // Get active announcements for the device
+    const announcements = await announcementService.getActiveAnnouncements();
+    
+    // Return the resolved playlist
+    res.json({ 
+      success: true, 
+      playlist: { 
+        id: playlist.id, 
+        name: playlist.name,
+        items: resolvedItems 
+      },
+      device: {
+        id: device.id,
+        name: device.name,
+        location: device.location
+      },
+      announcements: announcements
+    });
+    
+  } catch (err) {
+    console.error('Error fetching device playlist:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  }
+});
+
+// Device ping endpoint
+router.post('/:deviceId/ping', async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const { firmware, ip, status } = req.body || {};
+    
+    // Update last seen timestamp and other device info
+    const updatedDevice = await deviceService.updateDevice(deviceId, {
+      last_seen: new Date().toISOString(),
+      status: status || {}
+    });
+    
+    if (!updatedDevice) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Device not found' 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Device ping received successfully',
+      lastSeen: updatedDevice.last_seen 
+    });
+    
+  } catch (err) {
+    console.error('Error pinging device:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  }
+});
+
+export default router;
