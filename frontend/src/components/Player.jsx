@@ -254,8 +254,10 @@ export default function Player({ deviceId }) {
             minWidth: "10ch"
           }}
         >
-          <div style={{ fontSize: "clamp(1rem, 2.2vw, 2.2rem)", fontWeight: 700 }}>{timeStr}</div>
-          <div style={{ fontSize: "clamp(0.8rem, 1.4vw, 1rem)", opacity: 0.85 }}>{dateStr}</div>
+          <div style={{ fontSize: "clamp(0.9rem, 1.4vw, 1.1rem)", fontWeight: 600, lineHeight: 1.2 }}>
+            <div>{timeStr}</div>
+            <div>{dateStr}</div>
+          </div>
         </div>
       </div>
 
@@ -288,7 +290,7 @@ export default function Player({ deviceId }) {
         gap: "1.5vh",
         zIndex: 30
       }}>
-        {/* Top Module: Combined Time and Weather Info */}
+        {/* Top Module: Weather Info */}
         <div style={{
           background: "linear-gradient(135deg, #013a63, #083b6d)",
           borderRadius: 16,
@@ -301,33 +303,21 @@ export default function Player({ deviceId }) {
           boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
         }}>
           <div style={{ 
-            fontSize: "clamp(1rem, 1.8vw, 2rem)", 
+            fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)", 
             fontWeight: 700, 
-            marginBottom: "0.3vh",
-            lineHeight: 1.3,
-            letterSpacing: "0.5px",
-            opacity: 0.9,
-            textShadow: "0 0 8px rgba(255,255,255,0.2)"
+            marginBottom: "0.3vh"
           }}>
-            {timeStr}
-          </div>
-          <div style={{ 
-            fontSize: "clamp(0.7rem, 1.1vw, 0.9rem)", 
-            opacity: 0.85, 
-            marginBottom: "0.4vh",
-            textAlign: "center"
-          }}>
-            {dateStr}
+            {temperature}°C
           </div>
           <div style={{ 
             display: "flex", 
             alignItems: "center", 
             gap: "0.4vw", 
-            fontSize: "clamp(0.7rem, 1.1vw, 0.9rem)",
+            fontSize: "clamp(0.8rem, 1.3vw, 1rem)",
             textAlign: "center"
           }}>
             <span>🌤️</span>
-            <span>{temperature}°C {condition} — Depok</span>
+            <span>{condition} — Depok</span>
           </div>
         </div>
 
