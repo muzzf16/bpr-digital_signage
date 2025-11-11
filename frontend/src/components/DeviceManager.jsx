@@ -1,128 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { FaDesktop } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import GlassCard from './GlassCard';
+import DataTable from './DataTable';
 
-export default function DeviceManager() {
+const DeviceManager = () => {
   const [devices, setDevices] = useState([]);
-  const [newDevice, setNewDevice] = useState({
-    name: '',
-    location: '',
-    status: 'active'
-  });
 
   useEffect(() => {
-    // For now, we'll use mock data since there's no dedicated device API
-    // In a real implementation, fetch from backend API
-    setDevices([
-      { id: 'demo-tv-01', name: 'Main Lobby Display', location: 'Main Lobby', status: 'active', lastActive: '2025-11-11T08:30:00Z' },
-      { id: 'demo-tv-02', name: 'Branch Office Display', location: 'Branch Office', status: 'active', lastActive: '2025-11-11T08:25:00Z' },
-      { id: 'demo-tv-03', name: 'Conference Room Display', location: 'Conference Room', status: 'inactive', lastActive: '2025-11-10T17:45:00Z' }
-    ]);
+    fetch('/api/admin/devices')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setDevices(data.devices);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching devices:", err);
+        toast.error("Failed to fetch devices.");
+      });
   }, []);
 
-  const addDevice = () => {
-    if (!newDevice.name || !newDevice.location) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    const deviceToAdd = {
-      id: `demo-tv-${devices.length + 1}`,
-      ...newDevice,
-      lastActive: new Date().toISOString()
-    };
-
-    setDevices([...devices, deviceToAdd]);
-    setNewDevice({ name: '', location: '', status: 'active' });
+  const handleEdit = (item) => {
+    toast.info(`Edit clicked for: ${item.name}`);
   };
 
-  const removeDevice = (id) => {
-    if (window.confirm('Are you sure you want to remove this device?')) {
-      setDevices(devices.filter(device => device.id !== id));
+  const handleDelete = (item) => {
+    if (window.confirm(`Are you sure you want to delete this device?`)) {
+      // Here you would call the API to delete the item
+      toast.success(`Device deleted successfully!`);
     }
-  };
-
-  const updateDeviceStatus = (id, newStatus) => {
-    setDevices(devices.map(device => 
-      device.id === id ? { ...device, status: newStatus } : device
-    ));
   };
 
   return (
-    <div>
-      <h2>Device Manager</h2>
+    <GlassCard 
+      title="🖥️ Device Management" 
+      icon={<FaDesktop />}
+      className="lg:col-span-2"
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-white font-medium">Connected Devices</h4>
+        <div className="flex space-x-2">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+            Refresh
+          </button>
+        </div>
+      </div>
       
-      <div className="add-device-form" style={{ marginBottom: '30px' }}>
-        <h3>Add New Device</h3>
-        <div className="form-group">
-          <label>Device Name:</label>
-          <input
-            type="text"
-            value={newDevice.name}
-            onChange={(e) => setNewDevice({...newDevice, name: e.target.value})}
-            placeholder="e.g., Lobby Display"
-          />
-        </div>
-        <div className="form-group">
-          <label>Location:</label>
-          <input
-            type="text"
-            value={newDevice.location}
-            onChange={(e) => setNewDevice({...newDevice, location: e.target.value})}
-            placeholder="e.g., Main Lobby"
-          />
-        </div>
-        <div className="form-group">
-          <label>Status:</label>
-          <select
-            value={newDevice.status}
-            onChange={(e) => setNewDevice({...newDevice, status: e.target.value})}
-          >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="maintenance">Maintenance</option>
-          </select>
-        </div>
-        <button onClick={addDevice}>Add Device</button>
-      </div>
-
-      <div className="device-list">
-        <h3>Registered Devices</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Last Active</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {devices.map(device => (
-              <tr key={device.id}>
-                <td>{device.id}</td>
-                <td>{device.name}</td>
-                <td>{device.location}</td>
-                <td>
-                  <select
-                    value={device.status}
-                    onChange={(e) => updateDeviceStatus(device.id, e.target.value)}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="maintenance">Maintenance</option>
-                  </select>
-                </td>
-                <td>{new Date(device.lastActive).toLocaleString()}</td>
-                <td>
-                  <button onClick={() => removeDevice(device.id)}>Remove</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <DataTable 
+        columns={[
+          { key: 'name', header: 'Device Name' },
+          { key: 'location', header: 'Location' },
+          { key: 'status', header: 'Status', render: (value) => (
+            <span className={`px-2 py-1 rounded-full text-xs ${
+              value === 'Online' ? 'bg-green-600/30 text-green-200' : 'bg-red-600/30 text-red-200'
+            }`}>
+              {value}
+            </span>
+          )},
+          { key: 'lastSeen', header: 'Last Seen' },
+        ]}
+        data={devices}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    </GlassCard>
   );
-}
+};
+
+export default DeviceManager;
