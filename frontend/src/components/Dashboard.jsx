@@ -7,7 +7,7 @@ import PlaylistManager from './PlaylistManager';
 import RateManager from './RateManager';
 import DeviceManager from './DeviceManager';
 import { 
-  FaCog, FaFilm,
+  FaCog, FaFilm, FaDesktop,
   FaBell,
   FaPlus, FaDownload
 } from 'react-icons/fa';
