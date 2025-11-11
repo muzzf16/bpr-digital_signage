@@ -1,5 +1,6 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import xml2js from 'xml2js';
+import * as cheerio from 'cheerio';
 import { cached } from './cacheService.js';
 
 // Constants
@@ -23,10 +24,10 @@ async function callBiSoap(dateStr) {
     'SOAPAction': process.env.BI_SOAP_ACTION
   };
   
-  const res = await fetch(process.env.BI_WS_URL, { method: 'POST', body: soapBody, headers });
-  if (!res.ok) throw new Error(`BI SOAP returned ${res.status}`);
+  const res = await axios.post(process.env.BI_WS_URL, soapBody, { headers });
+  if (res.status !== 200) throw new Error(`BI SOAP returned ${res.status}`);
   
-  const text = await res.text();
+  const text = res.data;
   const parsed = await xml2js.parseStringPromise(text, { explicitArray: false, ignoreAttrs: true });
   
   // NOTE: Actual parsing logic is needed here based on the SOAP response structure
@@ -63,28 +64,34 @@ async function fetchFromBCA() {
   if (!process.env.BCA_RATES_URL) return null;
   
   try {
-    const response = await fetch(process.env.BCA_RATES_URL);
-    if (!response.ok) {
+    const response = await axios.get(process.env.BCA_RATES_URL);
+    if (response.status !== 200) {
       console.warn(`BCA service returned ${response.status}`);
       return null;
     }
     
-    const json = await response.json();
-    const rows = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+    const html = response.data;
+    const $ = cheerio.load(html);
     const rates = {};
-    
-    for (const row of rows) {
-      const code = (row.currency || row.code || '').toUpperCase();
-      if (!code) continue;
-      const val = (row.eRate && row.eRate.sell) || (row.eRate && row.eRate.buy) || null;
-      if (val) rates[code] = Number(String(val).replace(/[, ]/g, ''));
-    }
+
+    $('table.m-table-kurs tbody tr').each((i, el) => {
+      const currency = $(el).find('td:nth-child(1)').text().trim();
+      const eRateJual = $(el).find('td:nth-child(2)').text().trim();
+      const eRateBeli = $(el).find('td:nth-child(3)').text().trim();
+
+      if (currency && eRateJual && eRateBeli) {
+        rates[currency] = {
+          jual: parseFloat(eRateJual.replace(/\./g, '').replace(',', '.')),
+          beli: parseFloat(eRateBeli.replace(/\./g, '').replace(',', '.'))
+        };
+      }
+    });
     
     if (rates.USD) {
       return { 
-        USD: rates.USD, 
-        SGD: rates.SGD || null, 
-        JPY: rates.JPY || null, 
+        USD: rates.USD.jual, 
+        SGD: rates.SGD?.jual || null, 
+        JPY: rates.JPY?.jual || null, 
         source: 'BCA', 
         fetchedAt: new Date().toISOString() 
       };
@@ -104,9 +111,9 @@ async function fetchFromExchangeAPI() {
   if (!process.env.EXCHANGE_API_URL) return null;
   
   try {
-    const response = await fetch(process.env.EXCHANGE_API_URL);
-    if (response.ok) {
-      const rates = await response.json();
+    const response = await axios.get(process.env.EXCHANGE_API_URL);
+    if (response.status === 200) {
+      const rates = response.data;
       return { ...rates, source: 'custom-exchange', fetchedAt: new Date().toISOString() };
     }
   } catch (error) {
@@ -122,10 +129,10 @@ async function fetchFromExchangeAPI() {
  */
 async function fetchFromExchangeRateHost() {
   try {
-    const response = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=IDR,SGD,JPY,EUR');
-    if (!response.ok) throw new Error('exchangerate.host failed');
+    const response = await axios.get('https://api.exchangerate.host/latest?base=USD&symbols=IDR,SGD,JPY,EUR');
+    if (response.status !== 200) throw new Error('exchangerate.host failed');
     
-    const json = await response.json();
+    const json = response.data;
     return {
       USD: json.rates?.IDR ? Math.round(json.rates.IDR) : null,
       SGD: json.rates?.SGD ? Math.round(1 / json.rates.SGD * json.rates.IDR) : null,
@@ -191,26 +198,38 @@ async function getCurrencyRates() {
 async function getGoldPrice() {
   const refreshSeconds = Number(process.env.REFRESH_GOLD_SECONDS || DEFAULT_GOLD_REFRESH_SECONDS);
   return cached('goldPrice', refreshSeconds, async () => {
-    if (process.env.GOLD_API_KEY) {
-      try {
-        const response = await fetch('https://www.goldapi.io/api/XAU/IDR', { 
-          headers: { 'x-access-token': process.env.GOLD_API_KEY } 
-        });
-        
-        if (response.ok) {
-          const json = await response.json();
-          const ouncePrice = Number(json.price || json.value || 0);
-          const gramPrice = ouncePrice ? Math.round(ouncePrice / 31.1034768) : null;
-          return { 
-            gram: gramPrice, 
-            ounce: ouncePrice, 
-            fetchedAt: new Date().toISOString(), 
-            source: 'goldapi.io' 
-          };
-        }
-      } catch (error) {
-        console.warn('GoldAPI error:', error.message);
+    try {
+      const response = await axios.get('https://emasantam.id/harga-emas-antam-harian/');
+      const html = response.data;
+
+      const regex1Gram = /Harga Emas 1 gram.*?Rp\.\s*([\d\.]+)/;
+      const regexPrevious = /Harga Sebelumnya.*?Rp\.\s*([\d\.]+)/;
+
+      const match1Gram = html.match(regex1Gram);
+      const matchPrevious = html.match(regexPrevious);
+
+      let gramPrice = null;
+      let previousPrice = null;
+
+      if (match1Gram && match1Gram[1]) {
+        gramPrice = parseFloat(match1Gram[1].replace(/\./g, ''));
       }
+
+      if (matchPrevious && matchPrevious[1]) {
+        previousPrice = parseFloat(matchPrevious[1].replace(/\./g, ''));
+      }
+
+      if (gramPrice) {
+        return { 
+          gram: gramPrice, 
+          ounce: gramPrice * 31.1034768, // Approximate conversion
+          previous: previousPrice,
+          fetchedAt: new Date().toISOString(), 
+          source: 'emasantam.id' 
+        };
+      }
+    } catch (error) {
+      console.warn('EmasAntam scraping error:', error.message);
     }
     
     return { 
@@ -229,34 +248,40 @@ async function getGoldPrice() {
 async function getStockIndex() {
   const refreshSeconds = Number(process.env.REFRESH_STOCK_SECONDS || DEFAULT_STOCK_REFRESH_SECONDS);
   return cached('stockIndex', refreshSeconds, async () => {
-    try {
-      const url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EJKSE';
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Yahoo failed');
-      
-      const json = await response.json();
-      const quote = json.quoteResponse && json.quoteResponse.result && json.quoteResponse.result[0];
-      if (!quote) throw new Error('No result');
-      
-      return { 
-        symbol: quote.symbol, 
-        name: quote.shortName || 'IHSG', 
-        price: quote.regularMarketPrice, 
-        change: quote.regularMarketChangePercent ? `${quote.regularMarketChangePercent.toFixed(2)}%` : null, 
-        fetchedAt: new Date().toISOString(), 
-        source: 'yahoo' 
-      };
-    } catch (error) {
-      console.warn('Yahoo fetch failed:', error.message);
-      return { 
-        symbol: '^JKSE', 
-        name: 'IHSG', 
-        price: 7115.23, 
-        change: '+0.34%', 
-        fetchedAt: new Date().toISOString(), 
-        source: 'mock' 
-      };
+    if (process.env.GOAPI_API_KEY) {
+      try {
+        const response = await axios.get('https://api.goapi.io/stock/idx/indices', { 
+          headers: { 'X-API-KEY': process.env.GOAPI_API_KEY } 
+        });
+        
+        if (response.status === 200) {
+          const indices = response.data.data;
+          const ihsg = indices.find(index => index.symbol === 'COMPOSITE');
+
+          if (ihsg) {
+            return { 
+              symbol: ihsg.symbol, 
+              name: ihsg.name, 
+              price: ihsg.last, 
+              change: ihsg.change_percentage, 
+              fetchedAt: new Date().toISOString(), 
+              source: 'goapi.io' 
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('GOAPI.IO error:', error.message);
+      }
     }
+    
+    return { 
+      symbol: '^JKSE', 
+      name: 'IHSG', 
+      price: 7115.23, 
+      change: '+0.34%', 
+      fetchedAt: new Date().toISOString(), 
+      source: 'mock' 
+    };
   });
 }
 

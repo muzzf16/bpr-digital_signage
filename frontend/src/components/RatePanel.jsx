@@ -1,51 +1,35 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React from 'react';
+import useSWR from 'swr';
+import axios from 'axios';
 
 // Constants
 const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
-const API_KEY = "secret_dev_key";
+const API_KEY = import.meta.env.VITE_API_KEY || 'secret_dev_key';
+
+const fetcher = async (url) => {
+  try {
+    const res = await axios.get(url);
+    return res.data;
+  } catch (error) {
+    const newError = new Error('An error occurred while fetching the data.');
+    newError.info = error.response?.data;
+    newError.status = error.response?.status;
+    throw newError;
+  }
+};
 
 export default function RatePanel({ productId, fallback }) {
-  const [rate, setRate] = useState(fallback || null);
-  const [loading, setLoading] = useState(!fallback);
-
-  // Fetch rate data
-  const fetchRate = useCallback(async () => {
-    if (!productId) return;
-    
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/rates/${encodeURIComponent(productId)}?api_key=${API_KEY}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const j = await res.json();
-      setRate(j.rate);
-    } catch (e) {
-      console.error("Error fetching rate:", e);
-    } finally {
-      setLoading(false);
+  const { data, error } = useSWR(
+    productId ? `/api/rates/${encodeURIComponent(productId)}?api_key=${API_KEY}` : null,
+    fetcher,
+    {
+      refreshInterval: REFRESH_INTERVAL,
+      fallbackData: fallback ? { rate: fallback } : undefined,
     }
-  }, [productId]);
+  );
 
-  useEffect(() => {
-    let mounted = true;
-
-    if (productId) {
-      fetchRate();
-      
-      // Set up refresh interval
-      const intervalId = setInterval(() => {
-        if (mounted) {
-          fetchRate();
-        }
-      }, REFRESH_INTERVAL);
-
-      return () => {
-        mounted = false;
-        clearInterval(intervalId);
-      };
-    } else {
-      setLoading(false);
-    }
-  }, [productId, fetchRate]);
+  const rate = data?.rate;
+  const loading = !data && !error;
 
   if (loading && !rate) {
     return (

@@ -1,84 +1,35 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext } from 'react';
+import useSWR from 'swr';
+import axios from 'axios';
 
 // Constants
 const DEFAULT_API_KEY = 'secret_dev_key';
 const DEFAULT_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
-const MIN_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 const EconomicContext = createContext({ data: null, loading: true, error: null, refresh: () => {} });
 
-export function EconomicProvider({ children, apiKey = DEFAULT_API_KEY, refreshIntervalMs = DEFAULT_REFRESH_INTERVAL }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const lastFetchedRef = useRef(null);
-  const abortRef = useRef(null);
+const fetcher = async (url) => {
+  try {
+    const res = await axios.get(url);
+    return res.data;
+  } catch (error) {
+    const newError = new Error('An error occurred while fetching the data.');
+    newError.info = error.response?.data;
+    newError.status = error.response?.status;
+    throw newError;
+  }
+};
 
-  // Fetch economic data
-  const fetchEconomic = useCallback(async () => {
-    if (abortRef.current) {
-      abortRef.current.abort();
-    }
-    
-    const controller = new AbortController();
-    abortRef.current = controller;
-    
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/economic?api_key=${encodeURIComponent(apiKey)}`, { 
-        signal: controller.signal, 
-        cache: 'no-store' 
-      });
-      
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      
-      if (json && json.data) {
-        setData({ 
-          ...json.data, 
-          updatedAt: json.data.updatedAt || new Date().toISOString(), 
-          news: json.news || [] 
-        });
-        lastFetchedRef.current = Date.now();
-        setError(null);
-      } else {
-        throw new Error('Invalid response shape');
-      }
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.warn('fetchEconomic error', err);
-        setError(err);
-      }
-    } finally {
-      setLoading(false);
-      abortRef.current = null;
-    }
-  }, [apiKey]);
+export function EconomicProvider({ children, refreshIntervalMs = DEFAULT_REFRESH_INTERVAL }) {
+  const apiKey = import.meta.env.VITE_API_KEY || DEFAULT_API_KEY;
+  const { data, error, mutate } = useSWR(`/api/economic?api_key=${encodeURIComponent(apiKey)}`, fetcher, {
+    refreshInterval: refreshIntervalMs,
+  });
 
-  // Initialize data and set up refresh interval
-  useEffect(() => {
-    // Initial fetch
-    fetchEconomic();
-    
-    // Set up refresh interval
-    const intervalId = setInterval(() => {
-      // Only fetch if we haven't fetched recently
-      if (lastFetchedRef.current && Date.now() - lastFetchedRef.current < refreshIntervalMs / 2) {
-        return;
-      }
-      fetchEconomic();
-    }, Math.max(refreshIntervalMs, MIN_REFRESH_INTERVAL));
-    
-    return () => {
-      clearInterval(intervalId);
-      if (abortRef.current) {
-        abortRef.current.abort();
-      }
-    };
-  }, [fetchEconomic, refreshIntervalMs]);
+  const loading = !data && !error;
 
   return (
-    <EconomicContext.Provider value={{ data, loading, error, refresh: fetchEconomic }}>
+    <EconomicContext.Provider value={{ data: data?.data, loading, error, refresh: mutate }}>
       {children}
     </EconomicContext.Provider>
   );

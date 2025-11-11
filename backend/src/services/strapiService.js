@@ -1,16 +1,18 @@
 import axios from 'axios';
+import logger from './loggerService.js';
 
 // Constants
-const DEFAULT_STRAPI_URL = 'http://localhost:1337';
-
-// Create axios instance for Strapi API
 const strapi = axios.create({
-  baseURL: process.env.STRAPI_API_URL || DEFAULT_STRAPI_URL,
+  baseURL: process.env.STRAPI_API_URL,
   headers: {
     'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`
   },
   timeout: 10000 // 10 second timeout
 });
+
+if (!process.env.STRAPI_API_URL) {
+  throw new Error('STRAPI_API_URL environment variable is not set.');
+}
 
 /**
  * Flattens the Strapi API response to make it easier to work with.
@@ -49,7 +51,7 @@ function flattenStrapiResponse(data) {
 async function getPlaylistByDeviceId(deviceId) {
   try {
     if (!deviceId) {
-      console.warn('getPlaylistByDeviceId: deviceId is required');
+      logger.warn('getPlaylistByDeviceId: deviceId is required');
       return null;
     }
 
@@ -70,13 +72,13 @@ async function getPlaylistByDeviceId(deviceId) {
   } catch (error) {
     if (error.response) {
       // Server responded with error status
-      console.error(`Strapi API error fetching playlist for device ${deviceId}:`, error.response.status, error.response.data);
+      logger.error(`Strapi API error fetching playlist for device ${deviceId}:`, { status: error.response.status, data: error.response.data });
     } else if (error.request) {
       // Request was made but no response received
-      console.error(`Network error fetching playlist for device ${deviceId}:`, error.message);
+      logger.error(`Network error fetching playlist for device ${deviceId}:`, { message: error.message });
     } else {
       // Something else happened
-      console.error(`Unexpected error fetching playlist for device ${deviceId}:`, error.message);
+      logger.error(`Unexpected error fetching playlist for device ${deviceId}:`, { message: error.message });
     }
     
     // Don't throw error, just return null so the app can potentially fall back.
@@ -103,20 +105,51 @@ async function getActiveRates() {
   } catch (error) {
     if (error.response) {
       // Server responded with error status
-      console.error('Strapi API error fetching rates:', error.response.status, error.response.data);
+      logger.error('Strapi API error fetching rates:', { status: error.response.status, data: error.response.data });
     } else if (error.request) {
       // Request was made but no response received
-      console.error('Network error fetching rates:', error.message);
+      logger.error('Network error fetching rates:', { message: error.message });
     } else {
       // Something else happened
-      console.error('Unexpected error fetching rates:', error.message);
+      logger.error('Unexpected error fetching rates:', { message: error.message });
     }
     
     return []; // Return empty array on error
   }
 }
 
+async function getRateByProductId(productId) {
+  try {
+    if (!productId) {
+      logger.warn('getRateByProductId: productId is required');
+      return null;
+    }
+
+    const response = await strapi.get('/api/rates', {
+      params: {
+        'filters[productId][$eq]': productId,
+        'populate': '*',
+      }
+    });
+
+    if (response.data?.data && response.data.data.length > 0) {
+      return flattenStrapiResponse(response.data.data[0]);
+    }
+    return null;
+  } catch (error) {
+    if (error.response) {
+      logger.error(`Strapi API error fetching rate for product ${productId}:`, { status: error.response.status, data: error.response.data });
+    } else if (error.request) {
+      logger.error(`Network error fetching rate for product ${productId}:`, { message: error.message });
+    } else {
+      logger.error(`Unexpected error fetching rate for product ${productId}:`, { message: error.message });
+    }
+    return null;
+  }
+}
+
 export default {
   getPlaylistByDeviceId,
   getActiveRates,
+  getRateByProductId,
 };

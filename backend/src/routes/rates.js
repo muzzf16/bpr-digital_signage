@@ -1,6 +1,7 @@
 import express from 'express';
 import strapiService from '../services/strapiService.js';
 import mock from '../data/mock.js';
+import logger from '../services/loggerService.js';
 
 const router = express.Router();
 
@@ -12,11 +13,11 @@ router.get('/active', async (req, res) => {
     if (rates && rates.length > 0) {
       res.json({ success: true, rates });
     } else {
-      console.warn('[Rates] Could not fetch active rates from Strapi. Falling back to mock data.');
+      logger.warn('[Rates] Could not fetch active rates from Strapi. Falling back to mock data.');
       res.json({ success: true, rates: mock.rates });
     }
   } catch (error) {
-    console.error('[Rates] Error fetching active rates:', error);
+    logger.error('[Rates] Error fetching active rates:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error while fetching active rates' 
@@ -29,18 +30,13 @@ router.get('/:productId', async (req, res) => {
   const { productId } = req.params;
   
   try {
-    const rates = await strapiService.getActiveRates();
-
-    let rate;
-    if (rates && rates.length > 0) {
-      rate = rates.find(r => r.productId === productId);
-    }
+    let rate = await strapiService.getRateByProductId(productId);
 
     // If not found in Strapi data, try the mock data as a fallback
     if (!rate) {
       const mockRate = mock.rates.find(r => r.id === productId);
       if (mockRate) {
-        console.warn(`[Rates] Could not find rate for product '${productId}' in Strapi. Falling back to mock data.`);
+        logger.warn(`[Rates] Could not find rate for product '${productId}' in Strapi. Falling back to mock data.`);
         rate = mockRate;
       }
     }
@@ -54,7 +50,7 @@ router.get('/:productId', async (req, res) => {
 
     res.json({ success: true, rate });
   } catch (error) {
-    console.error(`[Rates] Error fetching rate for product '${productId}':`, error);
+    logger.error(`[Rates] Error fetching rate for product '${productId}':`, error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error while fetching rate' 

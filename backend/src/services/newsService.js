@@ -1,5 +1,7 @@
 import RSSParser from 'rss-parser';
+import axios from 'axios';
 import { cached } from './cacheService.js';
+import logger from './loggerService.js';
 
 // Constants
 const DEFAULT_NEWS_REFRESH_SECONDS = 900; // 15 minutes
@@ -25,7 +27,8 @@ async function getNews() {
     
     for (const feedUrl of feedUrls) {
       try {
-        const feed = await parser.parseURL(feedUrl);
+        const response = await axios.get(feedUrl);
+        const feed = await parser.parseString(response.data);
         const source = feed.title || feedUrl;
         
         // Take only the most recent items from each feed to avoid one feed dominating
@@ -40,7 +43,7 @@ async function getNews() {
         
         items.push(...feedItems);
       } catch (error) {
-        console.warn('RSS fetch failed for URL:', feedUrl, 'Error:', error.message);
+        logger.warn('RSS fetch failed for URL:', { feedUrl, error: error.message });
       }
     }
     
