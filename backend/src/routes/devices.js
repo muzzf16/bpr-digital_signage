@@ -4,6 +4,7 @@ import productService from '../services/productService.js';
 import promoService from '../services/promoService.js';
 import announcementService from '../services/announcementService.js';
 import deviceService from '../services/deviceService.js';
+import { cached } from '../services/cacheService.js';
 
 const router = express.Router();
 
@@ -11,37 +12,47 @@ const router = express.Router();
 router.get('/:deviceId/playlist', async (req, res) => {
   try {
     const { deviceId } = req.params;
+
+    // Get device information from cache
+    const device = await cached(
+      `device:${deviceId}`,
+      300, // 5 minutes cache
+      () => deviceService.getDeviceById(deviceId)
+    );
     
-    // Get device information
-    const device = await deviceService.getDeviceById(deviceId);
     if (!device) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Device not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Device not found'
       });
     }
-    
+
     // Update last seen timestamp
     await deviceService.updateDeviceLastSeen(deviceId);
-    
+
     // Get playlist ID for the device
     const playlistId = device.playlist_id;
     if (!playlistId) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'No playlist assigned to device' 
+      return res.status(404).json({
+        success: false,
+        message: 'No playlist assigned to device'
       });
     }
+
+    // Get playlist with items from cache
+    const playlist = await cached(
+      `playlist:${playlistId}`,
+      600, // 10 minutes cache
+      () => playlistService.getPlaylistWithItems(playlistId)
+    );
     
-    // Get playlist with items
-    const playlist = await playlistService.getPlaylistWithItems(playlistId);
     if (!playlist) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Playlist not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Playlist not found'
       });
     }
-    
+
     // Resolve items by fetching additional data as needed
     const resolvedItems = [];
     for (const item of playlist.items) {
@@ -51,25 +62,35 @@ router.get('/:deviceId/playlist', async (req, res) => {
         duration: item.duration_sec,
         metadata: item.metadata || {}
       };
-      
+
       // Resolve item-specific data
       if (item.item_type === 'product' && item.item_ref) {
-        const product = await productService.getProductById(item.item_ref);
+        const product = await cached(
+          `product:${item.item_ref}`,
+          600, // 10 minutes cache
+          () => productService.getProductById(item.item_ref)
+        );
+        
         if (product) {
-          baseItem.product = { 
-            id: product.id, 
-            name: product.name, 
+          baseItem.product = {
+            id: product.id,
+            name: product.name,
             interestRate: product.interest_rate,
             currency: product.currency,
             terms: product.terms
           };
         }
       } else if (item.item_type === 'promo' && item.item_ref) {
-        const promo = await promoService.getPromoById(item.item_ref);
+        const promo = await cached(
+          `promo:${item.item_ref}`,
+          600, // 10 minutes cache
+          () => promoService.getPromoById(item.item_ref)
+        );
+        
         if (promo) {
-          baseItem.promo = { 
-            id: promo.id, 
-            title: promo.title, 
+          baseItem.promo = {
+            id: promo.id,
+            title: promo.title,
             subtitle: promo.subtitle,
             body: promo.body
           };
@@ -85,38 +106,43 @@ router.get('/:deviceId/playlist', async (req, res) => {
             parsedMetadata = {};
           }
         }
-        
+
         baseItem.url = parsedMetadata?.url || parsedMetadata?.asset_url || `/public/uploads/${item.item_ref}`;
       }
-      
+
       // Add to resolved items
       resolvedItems.push(baseItem);
     }
-    
-    // Get active announcements for the device
-    const announcements = await announcementService.getActiveAnnouncements();
-    
+
+    // Get active announcements for the device (cached separately)
+    const announcements = await cached(
+      'announcements:active',
+      300, // 5 minutes cache
+      () => announcementService.getActiveAnnouncements()
+    );
+
     // Return the resolved playlist
-    res.json({ 
-      success: true, 
-      playlist: { 
-        id: playlist.id, 
+    res.json({
+      success: true,
+      playlist: {
+        id: playlist.id,
         name: playlist.name,
-        items: resolvedItems 
+        items: resolvedItems
       },
       device: {
         id: device.id,
         name: device.name,
         location: device.location
       },
-      announcements: announcements
+      announcements: announcements,
+      timestamp: new Date().toISOString()
     });
-    
+
   } catch (err) {
     console.error('Error fetching device playlist:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });
@@ -126,31 +152,31 @@ router.post('/:deviceId/ping', async (req, res) => {
   try {
     const { deviceId } = req.params;
     const { firmware, ip, status } = req.body || {};
-    
+
     // Update last seen timestamp and other device info
     const updatedDevice = await deviceService.updateDevice(deviceId, {
       last_seen: new Date().toISOString(),
       status: status || {}
     });
-    
+
     if (!updatedDevice) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Device not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Device not found'
       });
     }
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       message: 'Device ping received successfully',
-      lastSeen: updatedDevice.last_seen 
+      lastSeen: updatedDevice.last_seen
     });
-    
+
   } catch (err) {
     console.error('Error pinging device:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });

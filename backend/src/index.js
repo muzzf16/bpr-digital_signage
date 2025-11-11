@@ -7,7 +7,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import economicRouter from './routes/economic.js';
+import adminAnnouncementsRouter from './routes/admin/announcements.js';
+import adminAssetsRouter from './routes/admin/assets.js';
+import adminAuditRouter from './routes/admin/audit.js';
+import adminCompaniesRouter from './routes/admin/companies.js';
+import adminDevicesRouter from './routes/admin/devices.js';
 import adminPlaylistsRouter from './routes/admin/playlists.js';
+import adminPromosRouter from './routes/admin/promos.js';
 import adminRatesRouter from './routes/admin/rates.js';
 import playlistRouter from './routes/playlist.js';
 import uploadsRouter from './routes/uploads.js';
@@ -68,12 +74,19 @@ app.use((req, res, next) => {
 
 // Static assets
 app.use(`/${ASSETS_PATH}`, express.static(path.join(__dirname, '..', ASSETS_PATH)));
+app.use('/public/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
 // Routes
 app.use('/api/auth', authRouter); // Authentication routes
 app.use('/api/devices', devicesRouter); // Updated to use new devices router
 app.use('/api/uploads', uploadsRouter); // New uploads route
+app.use('/api/admin/announcements', adminAnnouncementsRouter);
+app.use('/api/admin/assets', adminAssetsRouter);
+app.use('/api/admin/audit', adminAuditRouter);
+app.use('/api/admin/companies', adminCompaniesRouter);
+app.use('/api/admin/devices', adminDevicesRouter);
 app.use('/api/admin/playlists', adminPlaylistsRouter);
+app.use('/api/admin/promos', adminPromosRouter);
 app.use('/api/admin/rates', adminRatesRouter);
 app.use('/api/economic', economicRouter);
 app.use('/api/playlist', playlistRouter); // Keep existing route for compatibility

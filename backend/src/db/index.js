@@ -51,9 +51,17 @@ function initializeTables() {
       height INTEGER,
       size_bytes INTEGER,
       uploaded_by TEXT,
+      cdn_url TEXT,
       created_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
     )
   `);
+
+  // Add cdn_url column if it doesn't exist (for backward compatibility)
+  try {
+    db.exec(`ALTER TABLE assets ADD COLUMN cdn_url TEXT;`);
+  } catch (e) {
+    // Column might already exist, which is fine
+  }
 
   // Create products table
   db.exec(`

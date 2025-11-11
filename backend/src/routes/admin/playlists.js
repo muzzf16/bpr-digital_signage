@@ -1,17 +1,17 @@
 import express from 'express';
-import fs from 'fs/promises';
-import path from 'path';
+import playlistService from '../../services/playlistService.js';
+import playlistItemService from '../../services/playlistItemService.js';
+import auditService from '../../services/auditService.js';
 
 const router = express.Router();
-const dataPath = path.resolve(process.cwd(), 'src', 'data', 'playlists.json');
 
 // Get all playlists
 router.get('/', async (req, res) => {
   try {
-    const data = await fs.readFile(dataPath, 'utf-8');
-    const playlists = JSON.parse(data);
+    const playlists = await playlistService.getAllPlaylists();
     res.json({ success: true, playlists });
   } catch (error) {
+    console.error('Error fetching playlists:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -20,12 +20,20 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const newPlaylist = req.body;
-    const data = await fs.readFile(dataPath, 'utf-8');
-    const playlists = JSON.parse(data);
-    playlists.push(newPlaylist);
-    await fs.writeFile(dataPath, JSON.stringify(playlists, null, 2));
-    res.json({ success: true, playlist: newPlaylist });
+    const playlist = await playlistService.createPlaylist(newPlaylist);
+    
+    // Log the creation
+    await auditService.createAuditLog(
+      req.user?.id || 'system', 
+      'playlist', 
+      playlist.id, 
+      'CREATE', 
+      { playlist: newPlaylist }
+    );
+    
+    res.status(201).json({ success: true, playlist });
   } catch (error) {
+    console.error('Error creating playlist:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -34,15 +42,14 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await fs.readFile(dataPath, 'utf-8');
-    const playlists = JSON.parse(data);
-    const playlist = playlists.find(p => p.id === id);
+    const playlist = await playlistService.getPlaylistWithItems(id);
     if (playlist) {
       res.json({ success: true, playlist });
     } else {
       res.status(404).json({ success: false, message: 'Playlist not found' });
     }
   } catch (error) {
+    console.error('Error fetching playlist:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -52,12 +59,23 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updatedPlaylist = req.body;
-    const data = await fs.readFile(dataPath, 'utf-8');
-    let playlists = JSON.parse(data);
-    playlists = playlists.map(p => (p.id === id ? updatedPlaylist : p));
-    await fs.writeFile(dataPath, JSON.stringify(playlists, null, 2));
-    res.json({ success: true, playlist: updatedPlaylist });
+    const playlist = await playlistService.updatePlaylist(id, updatedPlaylist);
+    if (playlist) {
+      // Log the update
+      await auditService.createAuditLog(
+        req.user?.id || 'system', 
+        'playlist', 
+        playlist.id, 
+        'UPDATE', 
+        { updates: updatedPlaylist }
+      );
+      
+      res.json({ success: true, playlist });
+    } else {
+      res.status(404).json({ success: false, message: 'Playlist not found' });
+    }
   } catch (error) {
+    console.error('Error updating playlist:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -66,12 +84,110 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await fs.readFile(dataPath, 'utf-8');
-    let playlists = JSON.parse(data);
-    playlists = playlists.filter(p => p.id !== id);
-    await fs.writeFile(dataPath, JSON.stringify(playlists, null, 2));
-    res.json({ success: true, message: 'Playlist deleted' });
+    const playlist = await playlistService.deletePlaylist(id);
+    if (playlist) {
+      // Log the deletion
+      await auditService.createAuditLog(
+        req.user?.id || 'system', 
+        'playlist', 
+        playlist.id, 
+        'DELETE', 
+        { deletedPlaylist: playlist }
+      );
+      
+      res.json({ success: true, message: 'Playlist deleted successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Playlist not found' });
+    }
   } catch (error) {
+    console.error('Error deleting playlist:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Routes for playlist items
+// Get all items in a playlist
+router.get('/:playlistId/items', async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const items = await playlistItemService.getPlaylistItemsByPlaylistId(playlistId);
+    res.json({ success: true, items });
+  } catch (error) {
+    console.error('Error fetching playlist items:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Add an item to a playlist
+router.post('/:playlistId/items', async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const newItem = { ...req.body, playlist_id: playlistId };
+    const item = await playlistItemService.createPlaylistItem(newItem);
+    
+    // Log the creation of playlist item
+    await auditService.createAuditLog(
+      req.user?.id || 'system', 
+      'playlist_item', 
+      item.id, 
+      'CREATE', 
+      { playlistId, item: newItem }
+    );
+    
+    res.status(201).json({ success: true, item });
+  } catch (error) {
+    console.error('Error adding item to playlist:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Update a playlist item
+router.put('/:playlistId/items/:itemId', async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const updatedItem = req.body;
+    const item = await playlistItemService.updatePlaylistItem(itemId, updatedItem);
+    if (item) {
+      // Log the update of playlist item
+      await auditService.createAuditLog(
+        req.user?.id || 'system', 
+        'playlist_item', 
+        item.id, 
+        'UPDATE', 
+        { updates: updatedItem }
+      );
+      
+      res.json({ success: true, item });
+    } else {
+      res.status(404).json({ success: false, message: 'Playlist item not found' });
+    }
+  } catch (error) {
+    console.error('Error updating playlist item:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Delete a playlist item
+router.delete('/:playlistId/items/:itemId', async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const item = await playlistItemService.deletePlaylistItem(itemId);
+    if (item) {
+      // Log the deletion of playlist item
+      await auditService.createAuditLog(
+        req.user?.id || 'system', 
+        'playlist_item', 
+        item.id, 
+        'DELETE', 
+        { deletedItem: item }
+      );
+      
+      res.json({ success: true, message: 'Playlist item deleted successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Playlist item not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting playlist item:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

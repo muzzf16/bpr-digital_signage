@@ -4,22 +4,23 @@ import db, { query, get, all } from '../db/index.js';
 const assetService = {
   // Create a new asset record
   async createAsset(assetData) {
-    const { 
-      filename, 
-      url, 
-      mime, 
-      width, 
-      height, 
+    const {
+      filename,
+      url,
+      mime,
+      width,
+      height,
       size_bytes,
-      uploaded_by 
+      uploaded_by,
+      cdn_url // Optional CDN URL
     } = assetData;
-    
+
     const sql = `
-      INSERT INTO assets (filename, url, mime, width, height, size_bytes, uploaded_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO assets (filename, url, mime, width, height, size_bytes, uploaded_by, cdn_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
-    const result = query(sql, [filename, url, mime, width, height, size_bytes, uploaded_by]);
+
+    const result = query(sql, [filename, url, mime, width, height, size_bytes, uploaded_by, cdn_url || null]);
     return this.getAssetById(result.lastInsertRowid);
   },
 
