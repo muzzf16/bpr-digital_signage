@@ -160,37 +160,13 @@ export default function VideoSlide({
     setMuted(video.muted);
   };
 
-  // Inline styles for fullscreen cover
-  const containerStyle = {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#000"
-  };
-
-  const videoStyle = {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    display: loading ? "none" : "block"
-  };
-
-  const posterStyle = {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    display: loading && poster ? "block" : "none"
-  };
-
   return (
     <div
       role="region"
       aria-label="Video promo"
       aria-live="polite"
       tabIndex={0}
-      style={containerStyle}
+      className="video-slide-container"
       onKeyDown={(e) => {
         // maintenance keyboard shortcuts
         if (e.key === " " || e.key === "k") { e.preventDefault(); togglePause(); }
@@ -198,14 +174,15 @@ export default function VideoSlide({
       }}
     >
       {/* poster while loading or when provided */}
-      {poster && <img src={poster} alt="poster" style={posterStyle} />}
+      {poster && <img src={poster} alt="poster" className="video-slide-poster" style={{ display: loading && poster ? "block" : "none" }} />}
 
       {/* video element */}
       <video
         ref={videoRef}
         src={url}
         poster={poster || undefined}
-        style={videoStyle}
+        className="video-slide-video"
+        style={{ display: loading ? "none" : "block" }}
         playsInline
         muted={muted}
         loop={loop}
@@ -213,27 +190,17 @@ export default function VideoSlide({
       />
 
       {/* overlay controls & status (hidden for normal signage but available on focus) */}
-      <div style={{ position: "absolute", left: 16, top: 12, color: "#fff", fontSize: 13, opacity: 0.95 }}>
+      <div className="video-slide-status">
         {loading ? "Memuat video..." : failed ? "Gagal memuat video" : paused ? "Paused" : "Memutar"}
       </div>
 
       {/* action buttons for maintenance/testing (visually subtle) */}
-      <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 8 }}>
+      <div className="video-slide-controls">
         {/* show only when focused to avoid clutter on TV */}
         <button
           onClick={togglePause}
           title="Play/Pause (space)"
-          style={{
-            display: "inline-block",
-            background: "rgba(0,0,0,0.45)",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.08)",
-            padding: "8px 10px",
-            borderRadius: 8,
-            fontSize: 14,
-            cursor: "pointer",
-            backdropFilter: "blur(4px)"
-          }}
+          className="video-slide-button"
           aria-label={paused ? "Play video" : "Pause video"}
         >
           {paused ? "Play" : "Pause"}
@@ -242,17 +209,7 @@ export default function VideoSlide({
         <button
           onClick={toggleMute}
           title="Mute/Unmute (m)"
-          style={{
-            display: "inline-block",
-            background: "rgba(0,0,0,0.45)",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.08)",
-            padding: "8px 10px",
-            borderRadius: 8,
-            fontSize: 14,
-            cursor: "pointer",
-            backdropFilter: "blur(4px)"
-          }}
+          className="video-slide-button"
           aria-label={muted ? "Unmute video" : "Mute video"}
         >
           {muted ? "Muted" : "Sound"}
@@ -262,16 +219,7 @@ export default function VideoSlide({
           <button
             onClick={handleRetry}
             title="Retry loading"
-            style={{
-              display: "inline-block",
-              background: "#ffd166",
-              color: "#042a57",
-              border: "none",
-              padding: "8px 12px",
-              borderRadius: 8,
-              fontWeight: 700,
-              cursor: "pointer"
-            }}
+            className="video-slide-button"
             aria-label="Retry loading video"
           >
             Retry

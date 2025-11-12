@@ -42,117 +42,45 @@ export default function RatePanel({ productId, fallback }) {
   if (loading && !rate) {
     // Loading state - skeleton loading bars
     return (
-      <div className="rate-panel" role="region" aria-label="Loading interest rates" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        height: '100%',
-        color: '#f5faff',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontSize: 'clamp(0.7rem, 1vw, 0.8rem)',
-          fontWeight: '600',
-          opacity: 0.85,
-          marginBottom: '0.4vh'
-        }}>
+      <div className="rate-panel rate-panel-loading" role="region" aria-label="Loading interest rates">
+        <div className="rate-panel-header">
           Suku Bunga Terbaru
         </div>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.6vh',
-          padding: '0.8vh 0'
-        }}>
+        <div className="rate-panel-content">
           {[...Array(3)].map((_, i) => (
-            <div key={i} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '0.1vh 0'
-            }}>
-              <div style={{
-                width: '50%',
-                height: '0.8rem',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                borderRadius: '0.4rem',
-                animation: 'pulse 1.5s infinite ease-in-out'
-              }} />
-              <div style={{
-                width: '30%',
-                height: '0.8rem',
-                backgroundColor: 'rgba(80,200,120,0.1)',
-                borderRadius: '0.4rem',
-                animation: 'pulse 1.5s infinite ease-in-out'
-              }} />
+            <div key={i} className="rate-panel-row">
+              <div className="pulse" style={{ width: '50%', height: '0.8rem', borderRadius: '0.4rem' }} />
+              <div className="pulse" style={{ width: '30%', height: '0.8rem', borderRadius: '0.4rem' }} />
             </div>
           ))}
         </div>
-        <div style={{
-          fontSize: 'clamp(0.5rem, 0.7vw, 0.6rem)',
-          opacity: 0.6,
-          textAlign: 'center',
-          marginTop: '0.4vh',
-          paddingTop: '0.3vh',
-          borderTop: '1px solid rgba(255,255,255,0.2)'
-        }}>
+        <div className="rate-panel-footer">
           Memuat...
         </div>
-        <style>{`
-          @keyframes pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="rate-panel" role="region" aria-label="Ringkasan suku bunga" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      height: '100%',
-      color: '#f5faff',
-      textAlign: 'center'
-    }}>
-      <div style={{
-        fontSize: 'clamp(0.7rem, 1vw, 0.8rem)',
-        fontWeight: '600',
-        opacity: 0.85,
-        marginBottom: '0.4vh'
-      }}>
+    <div className="rate-panel" role="region" aria-label="Ringkasan suku bunga">
+      <div className="rate-panel-header">
         Suku Bunga Terbaru
       </div>
-      <div style={{
-        fontSize: 'clamp(0.65rem, 0.9vw, 0.75rem)',
-        lineHeight: '1.4',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.2vh'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
-          <span style={{ opacity: 0.9 }}>Tabungan:</span>
-          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.tabungan}%</span>
+      <div className="rate-panel-content">
+        <div className="rate-panel-row">
+          <span className="rate-panel-label">Tabungan:</span>
+          <span className="rate-panel-value">{rateSummary.tabungan}%</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
-          <span style={{ opacity: 0.9 }}>Deposito:</span>
-          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.deposito}%</span>
+        <div className="rate-panel-row">
+          <span className="rate-panel-label">Deposito:</span>
+          <span className="rate-panel-value">{rateSummary.deposito}%</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.1vh 0' }}>
-          <span style={{ opacity: 0.9 }}>Kredit:</span>
-          <span style={{ fontWeight: '700', color: '#50c878' }}>{rateSummary.kredit}%</span>
+        <div className="rate-panel-row">
+          <span className="rate-panel-label">Kredit:</span>
+          <span className="rate-panel-value">{rateSummary.kredit}%</span>
         </div>
       </div>
-      <div style={{
-        fontSize: 'clamp(0.5rem, 0.7vw, 0.6rem)',
-        opacity: 0.6,
-        textAlign: 'center',
-        marginTop: '0.4vh',
-        paddingTop: '0.3vh',
-        borderTop: '1px solid rgba(255,255,255,0.2)'
-      }}>
+      <div className="rate-panel-footer">
         Berlaku hingga: Nov 2025
       </div>
     </div>

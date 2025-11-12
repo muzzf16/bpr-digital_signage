@@ -37,14 +37,7 @@ export default function EconPanel() {
   const { data, loading } = useEconomicData();
 
   if (loading && !data) {
-    return <div className="econ-panel" style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      height: '100%',
-      color: '#f5faff',
-      fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)'
-    }}>
+    return <div className="econ-panel econ-panel-loading">
       Memuat info ekonomi...
     </div>;
   }
@@ -60,69 +53,31 @@ export default function EconPanel() {
   const ihsgTrend = getTrendIndicator(ihsgChange);
 
   return (
-    <div className="econ-panel" role="region" aria-label="Informasi ekonomi" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-around',
-      height: '100%',
-      color: '#f5faff'
-    }}>
-      <div className="econ-row" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.3vh 0',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <div className="label" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.8rem, 1.2vw, 1rem)' }}>USD</div>
-        <div className="value" style={{ fontWeight: '700', fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)', color: '#29b6f6' }}>Rp {formatNumber(usdRate)}</div>
+    <div className="econ-panel econ-panel-container" role="region" aria-label="Informasi ekonomi">
+      <div className="econ-row">
+        <div className="econ-label">USD</div>
+        <div className="econ-value" style={{ color: '#29b6f6' }}>Rp {formatNumber(usdRate)}</div>
       </div>
-      <div className="econ-row" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.3vh 0',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <div className="label" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.8rem, 1.2vw, 1rem)' }}>SGD</div>
-        <div className="value" style={{ fontWeight: '700', fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)', color: '#29b6f6' }}>Rp {formatNumber(sgdRate)}</div>
+      <div className="econ-row">
+        <div className="econ-label">SGD</div>
+        <div className="econ-value" style={{ color: '#29b6f6' }}>Rp {formatNumber(sgdRate)}</div>
       </div>
-      <div className="econ-row" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.3vh 0',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <div className="label" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.8rem, 1.2vw, 1rem)' }}>Emas</div>
-        <div className="value" style={{ fontWeight: '700', fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)', color: '#ffd166' }}>{goldPrice ? `Rp ${formatNumber(goldPrice)}` : 'N/A'}</div>
+      <div className="econ-row">
+        <div className="econ-label">Emas</div>
+        <div className="econ-value" style={{ color: '#ffd166' }}>{goldPrice ? `Rp ${formatNumber(goldPrice)}` : 'N/A'}</div>
       </div>
-      <div className="econ-row" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.3vh 0'
-      }}>
-        <div className="label" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.8rem, 1.2vw, 1rem)' }}>IHSG</div>
-        <div className="value" style={{ fontWeight: '700', fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)', display: 'flex', alignItems: 'center', color: '#4caf50' }}>
+      <div className="econ-row">
+        <div className="econ-label">IHSG</div>
+        <div className="econ-value" style={{ color: '#4caf50' }}>
           <span>{ihsgValue !== undefined && ihsgValue !== null ? formatNumber(ihsgValue) : 'N/A'}</span>
           {ihsgTrend.indicator && (
-            <span style={{
-              marginLeft: '6px',
-              color: ihsgTrend.color,
-              fontSize: '0.8em'
-            }}>
+            <span className="econ-trend" style={{ color: ihsgTrend.color }}>
               {ihsgTrend.indicator} {ihsgChange}
             </span>
           )}
         </div>
       </div>
-      <div style={{
-        marginTop: '0.8vh',
-        fontSize: '0.7rem',
-        color: 'rgba(255,255,255,0.65)',
-        textAlign: 'right'
-      }}>
+      <div className="econ-updated-at">
         {data?.updatedAt ? `Update: ${new Date(data.updatedAt).toLocaleString()}` : ''}
       </div>
     </div>

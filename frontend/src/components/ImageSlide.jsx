@@ -34,7 +34,7 @@ export default function ImageSlide({ url, title }) {
 
   if (error) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white text-3xl">
+      <div className="image-slide-error">
         Gagal memuat gambar
       </div>
     );
@@ -42,7 +42,7 @@ export default function ImageSlide({ url, title }) {
 
   return (
     <div 
-      className="w-full h-full flex items-center justify-center relative overflow-hidden bg-black" 
+      className="image-slide-container"
       style={{ 
         opacity: opacity, 
         transition: `opacity ${FADE_TRANSITION_DURATION}ms ease-in-out` 
@@ -51,29 +51,14 @@ export default function ImageSlide({ url, title }) {
       <img 
         src={src} 
         alt={title || "promo"} 
-        className="w-full h-full object-cover" 
+        className="image-slide-img"
         style={{ 
-          filter: "brightness(0.96)", 
-          transform: "scale(1.02)", 
           transition: `transform ${SCALE_TRANSITION_DURATION}ms ease-out` 
         }} 
       />
-      <div 
-        className="absolute bottom-0 left-0 w-full h-1/3" 
-        style={{ 
-          background: "linear-gradient(180deg, rgba(0,0,0,0.75), transparent)" 
-        }} 
-      />
+      <div className="image-slide-overlay" />
       {title && (
-        <div 
-          className="absolute left-[3vw] bottom-[6vh] text-white font-bold" 
-          style={{ 
-            fontSize: "clamp(1.8rem, 4vw, 5rem)", 
-            lineHeight: 1.05, 
-            textShadow: "0 2px 12px rgba(0,0,0,.8)", 
-            maxWidth: "85%" 
-          }}
-        >
+        <div className="image-slide-title">
           {title}
         </div>
       )}

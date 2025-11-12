@@ -23,77 +23,31 @@ const ProductHighlight = () => {
   const currentProduct = products[currentProductIndex];
 
   return (
-    <div className="product-highlight" style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      color: '#f5faff'
-    }}>
-      <div style={{ 
-        textAlign: 'center', 
-        marginBottom: '0.8vh',
-        fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
-        opacity: 0.85
-      }}>
+    <div className="product-highlight">
+      <div className="product-highlight-header">
         Produk Unggulan
       </div>
       
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        padding: '0.8vh 0'
-      }}>
-        <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', marginBottom: '0.6vh' }}>
+      <div className="product-highlight-content">
+        <div className="product-highlight-icon">
           {currentProduct.icon}
         </div>
-        <h3 style={{
-          margin: 0,
-          fontSize: 'clamp(1rem, 1.8vw, 1.3rem)',
-          fontWeight: 600,
-          color: '#ffd166',
-          marginBottom: '0.4vh'
-        }}>
+        <h3 className="product-highlight-title">
           {currentProduct.title}
         </h3>
-        <div style={{ 
-          fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
-          marginBottom: '0.3vh',
-          opacity: 0.9
-        }}>
+        <div className="product-highlight-subtitle">
           {currentProduct.subtitle}
         </div>
-        <div style={{
-          fontWeight: '700',
-          fontSize: 'clamp(1rem, 1.8vw, 1.4rem)',
-          color: '#50c878',
-          marginTop: '0.2vh'
-        }}>
+        <div className="product-highlight-value">
           {currentProduct.value}
         </div>
       </div>
       
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '3px',
-        marginTop: '0.6vh',
-        padding: '0.3vh 0'
-      }}>
+      <div className="product-highlight-indicators">
         {products.map((_, idx) => (
           <div
             key={idx}
-            style={{
-              width: idx === currentProductIndex ? '12px' : '6px',
-              height: '4px',
-              borderRadius: '2px',
-              backgroundColor: idx === currentProductIndex ? '#ffd166' : 'rgba(255,255,255,0.3)',
-              transition: 'width 0.3s ease'
-            }}
+            className={`product-highlight-indicator ${idx === currentProductIndex ? 'product-highlight-indicator-active' : ''}`}
           />
         ))}
       </div>

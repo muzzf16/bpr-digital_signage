@@ -71,41 +71,20 @@ export default function NewsTicker() {
   if (loading || !items || items.length === 0) return null;
 
   return (
-    <div className="ticker" role="marquee" aria-live="polite" style={{
-      position: 'absolute',
-      bottom: '0.5vh',
-      left: 0,
-      right: 0,
-      height: '4vh',
-      background: 'rgba(0, 0, 0, 0.7)',
-      display: 'flex',
-      alignItems: 'center',
-      overflow: 'hidden',
-      zIndex: 50
-    }}>
+    <div className="ticker-container" role="marquee" aria-live="polite">
       <div
         ref={trackRef}
+        className="ticker-track"
         style={{
-          display: 'inline-block',
-          whiteSpace: 'nowrap',
-          willChange: 'transform',
           animation: `ticker-scroll ${durationSec}s linear infinite`,
-          color: '#f5faff',
-          fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)',
-          fontWeight: 400
         }}
         tabIndex={0}
         aria-label={`News ticker: ${tickerText}`}
       >
-        <span style={{
-          paddingLeft: '2rem',
-          paddingRight: '3rem'
-        }}>
+        <span className="ticker-item">
           {tickerText}
         </span>
-        <span style={{
-          paddingRight: '3rem'
-        }}>
+        <span className="ticker-item">
           {tickerText}
         </span>
       </div>

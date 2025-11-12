@@ -34,30 +34,18 @@ const LocationInfo = ({ location = "Jakarta Pusat", deviceId }) => {
   };
 
   return (
-    <div style={{
-      background: 'linear-gradient(180deg, #073b68, #032b4f)',
-      color: 'white',
-      padding: '12px 16px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
-      fontSize: '0.9rem'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '4px'
-      }}>
+    <div className="location-info">
+      <div className="location-info-header">
         <div>
-          <div style={{ fontWeight: 'bold', color: '#f1c40f' }}>{location}</div>
-          <div>{formatTime(time)}</div>
+          <div className="location-info-location">{location}</div>
+          <div className="location-info-time">{formatTime(time)}</div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div>{formatDate(time)}</div>
+        <div className="location-info-date-weather">
+          <div className="location-info-date">{formatDate(time)}</div>
           {temperature && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <div className="location-info-weather">
               <span>☀️</span>
-              <span style={{ marginLeft: '4px' }}>{temperature}°C</span>
+              <span>{temperature}°C</span>
             </div>
           )}
         </div>

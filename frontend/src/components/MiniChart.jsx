@@ -5,41 +5,13 @@ import React from 'react';
 const MiniChart = ({ type = 'line', data = [], color = '#f1c40f', title = '', currentValue = '', period = '7 hari' }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="mini-chart" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: 'auto'
-      }}>
-        <div className="mini-chart-title" style={{
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          opacity: 0.8,
-          marginBottom: '0.2vh'
-        }}>{title}</div>
-        <div className="mini-chart-value" style={{
-          fontSize: '0.8rem',
-          fontWeight: '700',
-          marginBottom: '0.4vh',
-          color: '#f5faff'
-        }}>N/A</div>
-        <div style={{
-          height: '50px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.7rem',
-          opacity: 0.7,
-          backgroundColor: 'rgba(255,255,255,0.05)',
-          borderRadius: '6px'
-        }}>
+      <div className="mini-chart">
+        <div className="mini-chart-title">{title}</div>
+        <div className="mini-chart-value">N/A</div>
+        <div className="mini-chart-no-data">
           No data
         </div>
-        <div style={{
-          fontSize: '0.6rem',
-          opacity: 0.5,
-          textAlign: 'right',
-          marginTop: '0.2vh'
-        }}>
+        <div className="mini-chart-period">
           {period}
         </div>
       </div>
@@ -67,55 +39,20 @@ const MiniChart = ({ type = 'line', data = [], color = '#f1c40f', title = '', cu
   }).join(' ');
 
   return (
-    <div className="mini-chart" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: 'auto',
-      color: '#f5faff'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '0.2vh'
-      }}>
-        <div className="mini-chart-title" style={{
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          opacity: 0.8
-        }}>{title}</div>
-        <div style={{
-          fontSize: '0.6rem',
-          opacity: 0.6
-        }}>
-          {period}
-        </div>
+    <div className="mini-chart">
+      <div className="mini-chart-header">
+        <div className="mini-chart-title">{title}</div>
+        <div className="mini-chart-period">{period}</div>
       </div>
-      <div className="mini-chart-value" style={{
-        fontSize: '0.8rem',
-        fontWeight: '700',
-        marginBottom: '0.3vh',
-        display: 'flex',
-        alignItems: 'center'
-      }}>
+      <div className="mini-chart-value">
         <span>{currentValue}</span>
         {changeIndicator && (
-          <span style={{
-            marginLeft: '0.3vw',
-            color: changeColor,
-            fontSize: '0.7rem'
-          }}>
+          <span className="mini-chart-change" style={{ color: changeColor }}>
             {changeIndicator} {Math.abs(percentageChange)}%
           </span>
         )}
       </div>
-      <div style={{ 
-        height: '45px', 
-        position: 'relative',
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: '6px',
-        padding: '4px'
-      }}>
+      <div className="mini-chart-svg-container">
         <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
           <defs>
             <linearGradient id={`gradient-${title.replace(/\s+/g, '')}`} x1="0%" y1="0%" x2="0%" y2="100%">

@@ -31,30 +31,11 @@ const TimeDisplay = () => {
   };
 
   return (
-    <div style={{
-      background: 'linear-gradient(180deg, #073b68, #032b4f)',
-      color: 'white',
-      padding: '16px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-      textAlign: 'center',
-      height: '100%'
-    }}>
-      <div style={{
-        fontSize: 'clamp(2.5rem, 4vw, 3.5rem)',
-        fontWeight: 800,
-        fontFamily: "'Roboto Mono', 'Courier New', monospace",
-        color: '#f1c40f',
-        lineHeight: 1,
-        marginBottom: '4px'
-      }}>
+    <div className="time-display">
+      <div className="time-display-time">
         {formatTime(time)}
       </div>
-      <div style={{
-        fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
-        opacity: 0.9,
-        marginTop: '4px'
-      }}>
+      <div className="time-display-date">
         {formatDate(time).toUpperCase()}
       </div>
     </div>

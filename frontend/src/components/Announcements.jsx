@@ -51,20 +51,15 @@ const Announcements = ({ deviceId }) => {
 
   return (
     <div className="announcements-panel" style={{
-      borderLeft: `4px solid ${getPriorityColor(currentAnnouncement.priority)}`,
+      borderLeftColor: getPriorityColor(currentAnnouncement.priority),
       animation: 'fadeInOut 10s linear'
     }}>
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '4px'
-      }}>
-        <span style={{ color: getPriorityColor(currentAnnouncement.priority), fontWeight: 'bold' }}>
+      <div className="announcements-content">
+        <span className="announcements-icon" style={{ color: getPriorityColor(currentAnnouncement.priority) }}>
           {currentAnnouncement.priority === 'high' ? '📢' : 
            currentAnnouncement.priority === 'medium' ? '⚠️' : 'ℹ️'}
         </span>
-        <span style={{ fontWeight: 'bold', color: '#f1c40f' }}>
+        <span className="announcements-message">
           {currentAnnouncement.message}
         </span>
       </div>
