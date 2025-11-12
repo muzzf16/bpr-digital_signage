@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useEconomicData } from "../context/EconomicContext";
 import ImageSlide from "./ImageSlide";
 import PromoCard from "./PromoCard";
-import RatePanel from "./RatePanel";
 import EconPanel from "./EconPanel";
 import NewsTicker from "./NewsTicker";
 import VideoSlide from "./VideoSlide";
@@ -310,31 +309,10 @@ export default function Player({ deviceId }) {
         {/* Bottom Module: Economic Data with Mini Charts */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "1fr",
           gap: "1vw",
           height: "100%"
         }}>
-          <div style={{
-            background: "#062e55",
-            borderRadius: 16,
-            padding: "1vw",
-            color: "#f5faff",
-            boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
-          }}>
-            <div style={{ height: '60%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <RatePanel productId={playlist.find(i => i.type === "rate")?.productId} fallback={playlist.find(i => i.type === "rate")} />
-            </div>
-            <div style={{ height: '40%', marginTop: "0.5vh" }}>
-              <MiniChart
-                type="line"
-                data={[6.7, 6.8, 6.9, 7.0, 6.9, 6.8, 6.85]}
-                title="Suku Bunga"
-                currentValue="6.85%"
-                color="#50c878"
-                period="7 hari"
-              />
-            </div>
-          </div>
           <div style={{
             background: "#062e55",
             borderRadius: 16,

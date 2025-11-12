@@ -1,15 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import useSWR from 'swr';
+import axios from 'axios';
+
+// Constants for rate fetching
+const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const API_KEY = import.meta.env.VITE_API_KEY || 'secret_dev_key';
+
+const fetcher = async (url) => {
+  try {
+    const res = await axios.get(url);
+    return res.data;
+  } catch (error) {
+    const newError = new Error('An error occurred while fetching the data.');
+    newError.info = error.response?.data;
+    newError.status = error.response?.status;
+    throw newError;
+  }
+};
 
 const ProductHighlight = () => {
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
 
+  // Fetch rate data
+  const { data: rateData, error: rateError } = useSWR(
+    `/api/rates/summary?api_key=${API_KEY}`, // Assuming a summary endpoint for all rates
+    fetcher,
+    { refreshInterval: REFRESH_INTERVAL }
+  );
+
+  const loadingRates = !rateData && !rateError;
+
   // Sample data - in a real implementation, this would come from an API
-  const products = [
+  const baseProducts = [
     { id: 1, title: 'Tabungan Simpanan', subtitle: 'Suku bunga', value: '8.5% p.a.', icon: '💰' },
     { id: 2, title: 'Deposito', subtitle: 'Tenor', value: '1–12 bulan', icon: '🏦' },
     { id: 3, title: 'Kredit Usaha', subtitle: 'Bunga spesial', value: 'Mulai 9.5%', icon: '💼' },
     { id: 4, title: 'Asuransi', subtitle: 'Perlindungan', value: 'Seumur hidup', icon: '🛡️' }
   ];
+
+  // Add rate summary to products if available
+  const products = [...baseProducts];
+  if (!loadingRates && rateData?.rate) {
+    products.push({
+      id: 'rate-summary',
+      title: 'Suku Bunga',
+      subtitle: 'Deposito',
+      value: `${rateData.rate.deposito}% p.a.`,
+      icon: '📈'
+    });
+  } else if (loadingRates) {
+    // Add a loading state for rates if still fetching
+    products.push({
+      id: 'rate-loading',
+      title: 'Memuat Suku Bunga',
+      subtitle: 'Mohon tunggu',
+      value: '...',
+      icon: '⏳'
+    });
+  }
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -17,7 +66,7 @@ const ProductHighlight = () => {
     }, 10000); // Change every 10 seconds
 
     return () => clearInterval(interval);
-  }, [products.length]);
+  }, [products.length]); // Depend on products.length to re-evaluate interval if products change
 
   const currentProduct = products[currentProductIndex];
 
