@@ -1,7 +1,7 @@
 // src/admin/AdminLayout.jsx
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import '../styles/admin.scoped.css';
+import '../styles/admin.css';
 
 export default function AdminLayout({ children }) {
   const location = useLocation();
@@ -21,12 +21,16 @@ export default function AdminLayout({ children }) {
   return (
     <div className="admin-root">
       <div className="admin-wrapper">
-        <aside className={`admin-sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+        <aside 
+          className={`admin-sidebar ${sidebarOpen ? "open" : "collapsed"}`}
+          aria-hidden={!sidebarOpen}
+          role="complementary"
+        >
           <div className="brand">
             <img src="/assets/logo-bpr.png" alt="BPR Logo" />
-            <div>
-              <div style={{fontSize: '0.95rem', color: 'var(--a-accent-2)', fontWeight:700}}>Bank</div>
-              <div style={{fontSize: '1rem', fontWeight:800}}>Perekonomian Rakyat</div>
+            <div className="brand-text">
+              <div className="brand-bank">Bank</div>
+              <div className="brand-name">Perekonomian Rakyat</div>
             </div>
           </div>
 
@@ -42,21 +46,30 @@ export default function AdminLayout({ children }) {
             ))}
           </nav>
 
-          <div style={{marginTop:'auto'}}>
+          <div className="nav-footer">
             <button className="btn btn-ghost" onClick={() => { /* handle logout */ }}>Logout</button>
           </div>
         </aside>
 
-        <div className="admin-main">
+        <div className={`admin-main ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
           <header className="admin-header">
             <div>
               <div className="admin-title">Admin Dashboard</div>
               <div className="muted">Kelola konten & perangkat digital signage</div>
             </div>
 
-            <div style={{display:'flex', gap:12, alignItems:'center'}}>
-              <button className="btn btn-ghost" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-              <input className="input" style={{width:240}} placeholder="Search..." />
+            <div className="header-actions">
+              <button 
+                className="btn btn-ghost" 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              >
+                ☰
+              </button>
+              <input 
+                className="input search-input" 
+                placeholder="Search..." 
+              />
               <div className="muted">User: Super Admin</div>
             </div>
           </header>

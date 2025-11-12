@@ -174,7 +174,7 @@ export default function DevicesPage() {
   }
 
   return (
-    <div className="admin-main-content">
+    <div className="admin-content">
       <div className="devices-page-header">
         <div>
           <h2 className="text-2xl font-semibold text-white flex items-center gap-2">

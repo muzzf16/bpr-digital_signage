@@ -9,6 +9,7 @@ import RateManager from './components/admin/rates/RateManager';
 import NewsManager from './components/admin/content/NewsManager';
 import EconomicManager from './components/admin/economic/EconomicManager';
 import DisplaySettingsManager from './components/admin/system/DisplaySettingsManager';
+import AnnouncementsManager from './components/admin/announcements/AnnouncementsManager';
 import DevicesPage from './components/admin/devices/DevicesPage';
 
 // Default device ID for demo purposes
@@ -60,6 +61,11 @@ export default function App() {
         <Route path="/admin/settings" element={
           <AdminLayout>
             <DisplaySettingsManager />
+          </AdminLayout>
+        } />
+        <Route path="/admin/announcements" element={
+          <AdminLayout>
+            <AnnouncementsManager />
           </AdminLayout>
         } />
       </Routes>

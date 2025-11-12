@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaNewspaper, FaPlus, FaEdit, FaTrash, FaSearch, FaGlobe, FaBullhorn } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import GlassCard from '../../GlassCard';
 
 const NewsManager = () => {
   const [newsItems, setNewsItems] = useState([]);
@@ -105,10 +104,10 @@ const NewsManager = () => {
       return;
     }
 
-    setNewsItems(newsItems.map(item => 
+    setNewsItems(newsItems.map(item =>
       item.id === selectedNews.id ? { ...item, ...newNews } : item
     ));
-    
+
     setSelectedNews(null);
     setIsModalOpen(false);
     setNewNews({
@@ -130,23 +129,32 @@ const NewsManager = () => {
     }));
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (selectedNews) {
+      handleUpdateNews();
+    } else {
+      handleAddNews();
+    }
+  };
+
   // Filter news based on search term
-  const filteredNews = newsItems.filter(item => 
+  const filteredNews = newsItems.filter(item =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <GlassCard className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 backdrop-blur-sm border border-blue-700/30">
+    <div className="glass-card">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
+          <h3 className="card-title flex items-center gap-2">
             <FaNewspaper className="text-yellow-400" /> News Management
           </h3>
-          <p className="text-blue-200 text-sm mt-1">Manage news content for digital displays</p>
+          <p className="card-sub">Manage news content for digital displays</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative">
             <input
@@ -154,11 +162,11 @@ const NewsManager = () => {
               placeholder="Search news..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-blue-800/30 text-white placeholder-blue-300 border border-blue-700/50 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48"
+              className="input w-full sm:w-48"
             />
             <FaSearch className="absolute left-3 top-3 text-blue-300" />
           </div>
-          
+
           <button
             onClick={() => {
               setSelectedNews(null);
@@ -172,7 +180,7 @@ const NewsManager = () => {
               });
               setIsModalOpen(true);
             }}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 shadow-lg shadow-blue-900/30"
+            className="btn btn-primary flex items-center space-x-2"
           >
             <FaPlus /> <span>Add News</span>
           </button>
@@ -180,39 +188,45 @@ const NewsManager = () => {
       </div>
 
       <div className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-900/40 p-4 rounded-lg">
-            <p className="text-blue-200 text-sm">Total News</p>
-            <p className="text-2xl font-bold text-white">{newsItems.length}</p>
+        <div className="admin-grid">
+          <div className="col-4">
+            <div className="devices-stat-card">
+              <div className="stat-label">Total News</div>
+              <div className="stat-value">{newsItems.length}</div>
+            </div>
           </div>
-          <div className="bg-red-900/40 p-4 rounded-lg">
-            <p className="text-red-200 text-sm">Breaking News</p>
-            <p className="text-2xl font-bold text-white">{newsItems.filter(n => n.isBreaking).length}</p>
+          <div className="col-4">
+            <div className="devices-stat-card">
+              <div className="stat-label">Breaking News</div>
+              <div className="stat-value">{newsItems.filter(n => n.isBreaking).length}</div>
+            </div>
           </div>
-          <div className="bg-green-900/40 p-4 rounded-lg">
-            <p className="text-green-200 text-sm">Economic News</p>
-            <p className="text-2xl font-bold text-white">{newsItems.filter(n => n.category === 'economic').length}</p>
+          <div className="col-4">
+            <div className="devices-stat-card">
+              <div className="stat-label">Economic News</div>
+              <div className="stat-value">{newsItems.filter(n => n.category === 'economic').length}</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-blue-700/50">
+        <table className="table">
           <thead>
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider">Title</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider">Source</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider">Date</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-blue-200 uppercase tracking-wider">Actions</th>
+              <th>Title</th>
+              <th>Source</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-blue-700/30">
+          <tbody>
             {filteredNews.length > 0 ? (
               filteredNews.map((item, index) => (
                 <tr key={index} className="hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 text-sm text-white">
+                  <td className="align-top">
                     <div className="flex items-center">
                       {item.isBreaking && (
                         <span className="bg-red-500 text-white text-xs px-2 py-1 rounded mr-2">BREAKING</span>
@@ -220,60 +234,47 @@ const NewsManager = () => {
                       <span className="font-medium">{item.title}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-white">
+                  <td className="align-top">
                     <div className="flex items-center">
                       <FaGlobe className="text-blue-300 mr-2" />
                       {item.source}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-white">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      item.category === 'economic' ? 'bg-blue-600/30 text-blue-200' :
-                      item.category === 'news' ? 'bg-green-600/30 text-green-200' :
-                      'bg-purple-600/30 text-purple-200'
-                    }`}>
+                  <td className="align-top">
+                    <span className={`status-badge ${item.category}`}>
                       {item.category}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-white">
+                  <td className="align-top">
                     {new Date(item.publishDate).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-sm text-white">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      item.isBreaking ? 'bg-red-600/30 text-red-200' : 'bg-gray-600/30 text-gray-200'
-                    }`}>
+                  <td className="align-top">
+                    <span className={`status-badge ${item.isBreaking ? 'breaking' : 'normal'}`}>
                       {item.isBreaking ? 'Breaking' : 'Normal'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm">
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-2 text-blue-300 hover:text-blue-100 hover:bg-blue-700/50 rounded-lg transition-colors"
-                        aria-label="Edit"
-                        title="Edit"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 text-red-300 hover:text-red-100 hover:bg-red-700/50 rounded-lg transition-colors"
-                        aria-label="Delete"
-                        title="Delete"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
+                  <td className="align-top text-right">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="action-button"
+                      title="Edit"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="action-button"
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td 
-                  colSpan="6" 
-                  className="px-4 py-6 text-center text-sm text-blue-200"
-                >
-                  No news items found. Add a new news item to get started.
+                <td colSpan="6" className="text-center text-sm text-blue-200 py-4">
+                  No news items found. Add a new item to get started.
                 </td>
               </tr>
             )}
@@ -283,120 +284,119 @@ const NewsManager = () => {
 
       {/* Modal for creating/editing news */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl border border-blue-700/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">
-                  {selectedNews ? `Edit News: ${selectedNews.title}` : 'Add New News'}
-                </h3>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-              
+        <div className="admin-modal">
+          <div className="admin-modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                {selectedNews ? `Edit News: ${selectedNews.title}` : 'Add New News'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="modal-close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="modal-body">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-blue-200 mb-1">Title</label>
+                  <label className="label">Title *</label>
                   <input
                     type="text"
                     name="title"
                     value={newNews.title}
                     onChange={handleInputChange}
-                    className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="input"
                     placeholder="Enter news title"
+                    required
                   />
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-blue-200 mb-1">Source</label>
-                    <input
-                      type="text"
-                      name="source"
-                      value={newNews.source}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter news source"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-blue-200 mb-1">Link</label>
-                    <input
-                      type="text"
-                      name="link"
-                      value={newNews.link}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter news link"
-                    />
-                  </div>
+
+                <div>
+                  <label className="label">Source *</label>
+                  <input
+                    type="text"
+                    name="source"
+                    value={newNews.source}
+                    onChange={handleInputChange}
+                    className="input"
+                    placeholder="Enter news source"
+                    required
+                  />
                 </div>
-                
+
+                <div>
+                  <label className="label">Link</label>
+                  <input
+                    type="text"
+                    name="link"
+                    value={newNews.link}
+                    onChange={handleInputChange}
+                    className="input"
+                    placeholder="Enter article URL"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-blue-200 mb-1">Category</label>
+                    <label className="label">Category</label>
                     <select
                       name="category"
                       value={newNews.category}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                     >
                       <option value="economic">Economic</option>
                       <option value="news">General News</option>
-                      <option value="announcements">Announcements</option>
+                      <option value="breaking">Breaking News</option>
                     </select>
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-blue-200 mb-1">Publish Date</label>
+                    <label className="label">Publish Date</label>
                     <input
                       type="date"
                       name="publishDate"
                       value={newNews.publishDate}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     name="isBreaking"
                     checked={newNews.isBreaking}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 bg-gray-700 border-gray-600"
+                    className="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-blue-200">
-                    Mark as Breaking News
-                  </label>
+                  <label className="label">Is Breaking News?</label>
                 </div>
               </div>
-              
-              <div className="flex justify-end space-x-3 mt-6">
-                <button 
+
+              <div className="modal-footer">
+                <button
+                  type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-600 rounded-lg text-white hover:bg-gray-700/50 transition-colors"
+                  className="btn btn-secondary"
                 >
                   Cancel
                 </button>
-                <button 
-                  onClick={selectedNews ? handleUpdateNews : handleAddNews}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg text-white hover:from-blue-700 hover:to-blue-800 transition-all"
+                <button
+                  type="submit"
+                  className="btn btn-primary"
                 >
                   {selectedNews ? 'Update News' : 'Add News'}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
-    </GlassCard>
+    </div>
   );
 };
 
