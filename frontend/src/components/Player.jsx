@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useEconomicData } from "../context/EconomicContext";
 import ImageSlide from "./ImageSlide";
 import PromoCard from "./PromoCard";
+import RatePanel from "./RatePanel";
 import EconPanel from "./EconPanel";
 import NewsTicker from "./NewsTicker";
 import VideoSlide from "./VideoSlide";
