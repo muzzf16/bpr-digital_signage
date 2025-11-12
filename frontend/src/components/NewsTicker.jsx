@@ -27,9 +27,6 @@ export default function NewsTicker() {
   const { data, loading } = useEconomicData();
   const items = data?.news || [];
 
-  // Hide if loading or no items
-  if (loading || !items || items.length === 0) return null;
-
   // Limit to max 3 headlines as requested
   const limitedItems = items.slice(0, 3);
 
@@ -69,6 +66,9 @@ export default function NewsTicker() {
       track.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
+
+  // Hide if loading or no items
+  if (loading || !items || items.length === 0) return null;
 
   return (
     <div className="ticker" role="marquee" aria-live="polite" style={{

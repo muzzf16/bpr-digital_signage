@@ -7,24 +7,21 @@ export default function PromoCard({ item }) {
   const image = item?.image || "/assets/demo.jpg";
 
   return (
-    <div className="promo-card-content">
-      <div className="promo-text" aria-hidden="false">
-        <h1 className="promo-title">{title}</h1>
-        <p className="promo-sub">{subtitle}</p>
-        {rate && (
-          <p style={{ 
-            marginTop: "1.2em", 
-            fontSize: "clamp(1rem, 2.4vw, 2.4rem)", 
-            fontWeight: 700,
-            color: "var(--gold)"
-          }}>
-            {rate}
-          </p>
-        )}
+    <article className="promo-card" role="region" aria-label={title}>
+      <div className="promo-inner">
+        <div className="promo-text" aria-hidden="false">
+          <h1 className="promo-title">{title}</h1>
+          <p className="promo-sub">{subtitle}</p>
+          {rate && (
+            <p className="promo-rate">
+              {rate}
+            </p>
+          )}
+        </div>
+        <figure className="promo-media" aria-hidden="true">
+          <img src={image} alt="Promo" />
+        </figure>
       </div>
-      <div className="promo-media" aria-hidden="true">
-        <img src={image} alt="Promo" />
-      </div>
-    </div>
+    </article>
   );
 }

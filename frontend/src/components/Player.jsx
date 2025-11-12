@@ -27,16 +27,13 @@ export default function Player({ deviceId }) {
   const [allowSound, setAllowSound] = useState(false);
   const containerRef = useRef(null);
 
-  // clock state (Asia/Jakarta)
-  const [now, setNow] = useState(() => new Date());
 
-  // update clock every second
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
 
+  // Get economic data for weather and other info
+  const { data: economicData, loading: economicLoading } = useEconomicData();
+  
   // formatted time and date using Asia/Jakarta
+  const now = new Date();
   const timeStr = new Intl.DateTimeFormat("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
@@ -52,9 +49,6 @@ export default function Player({ deviceId }) {
     year: "numeric",
     timeZone: "Asia/Jakarta"
   }).format(now);
-
-  // Get economic data for weather and other info
-  const { data: economicData, loading: economicLoading } = useEconomicData();
   
   // Extract weather data from economic data
   const temperature = economicData?.weather?.temperature || 31;
@@ -241,86 +235,17 @@ export default function Player({ deviceId }) {
         </div>
       </div>
 
-      <div style={{ position: "absolute", top: "2vh", right: "2vw", zIndex: 60 }}>
-        <div
-          style={{
-            textAlign: "right",
-            background: "rgba(0,0,0,0.28)",
-            padding: "0.5vw 0.9vw",
-            borderRadius: 10,
-            backdropFilter: "blur(6px)",
-            color: "#f5faff",
-            minWidth: "10ch"
-          }}
-        >
-          <div style={{ fontSize: "clamp(0.9rem, 1.4vw, 1.1rem)", fontWeight: 600, lineHeight: 1.2 }}>
-            <div>{timeStr}</div>
-            <div>{dateStr}</div>
-          </div>
-        </div>
+      <div className="clock-panel">
+        <div className="clock-time">{timeStr}</div>
+        <div className="clock-date">{dateStr}</div>
       </div>
+
+
 
       {/* -------------------------
           MAIN LAYOUT (promo left, panels right)
          ------------------------- */}
-      <div className="promo-card" aria-hidden={false}>
-        <div style={{
-          display: "flex",
-          gap: "clamp(12px,1.6vw,24px)",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          width: "100%",
-          height: "100%"
-        }}>
-          <div style={{
-            color: "var(--p-white)",
-            flex: "1 1 60%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center"
-          }}>
-            <div style={{
-              fontSize: "clamp(2.2rem, 6.5vw, 5.2rem)",
-              margin: "0 0 .4em",
-              fontWeight: 700,
-              letterSpacing: "-1px",
-              lineHeight: 1.02,
-              wordBreak: "break-word"
-            }}>
-              {currentItem.type === "promo" ? currentItem.title || promoItem.title : promoItem.title}
-            </div>
-            <div style={{
-              fontSize: "clamp(1rem, 2.4vw, 3.2rem)",
-              margin: 0,
-              opacity: 0.95,
-              lineHeight: 1.2
-            }}>
-              {currentItem.type === "promo" ? currentItem.subtitle || promoItem.subtitle : promoItem.subtitle}
-            </div>
-          </div>
-          <div style={{
-            width: "clamp(240px,25vw,520px)",
-            height: "100%",
-            borderRadius: 12,
-            overflow: "hidden",
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center"
-          }}>
-            <img
-              src={currentItem.type === "promo" ? currentItem.image || promoItem.image : promoItem.image}
-              alt=""
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transform: "translateY(6%)"
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      <PromoCard item={currentItem.type === 'promo' ? currentItem : promoItem} />
 
       {/* Announcements panel below the promo card */}
       <div style={{
@@ -333,17 +258,7 @@ export default function Player({ deviceId }) {
         <Announcements deviceId={deviceId} />
       </div>
 
-      <div className="right-col" role="complementary" style={{
-        position: "absolute",
-        top: "10vh",
-        right: "2vw",
-        width: "35%",
-        height: "75vh",
-        display: "grid",
-        gridTemplateRows: "0.25fr 0.4fr 0.35fr", /* Updated proportions: 25%, 40%, 35% */
-        gap: "1.5vh",
-        zIndex: 30
-      }}>
+      <div className="right-col" role="complementary">
         {/* Top Module: Weather Info */}
         <div style={{
           background: "linear-gradient(135deg, #013a63, #083b6d)",
