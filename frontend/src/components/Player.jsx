@@ -259,7 +259,7 @@ export default function Player({ deviceId }) {
       </div>
 
       <div className="right-col" role="complementary">
-        {/* Top Module: Weather Info */}
+        {/* Top Module: Product Highlight */}
         <div style={{
           background: "linear-gradient(135deg, #013a63, #083b6d)",
           borderRadius: 16,
@@ -271,23 +271,7 @@ export default function Player({ deviceId }) {
           color: "#f5faff",
           boxShadow: "0 6px 12px rgba(0,0,0,0.25)"
         }}>
-          <div style={{ 
-            fontSize: "clamp(1.2rem, 2.5vw, 2.2rem)", 
-            fontWeight: 700, 
-            marginBottom: "0.3vh"
-          }}>
-            {temperature}°C
-          </div>
-          <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "0.4vw", 
-            fontSize: "clamp(0.8rem, 1.3vw, 1rem)",
-            textAlign: "center"
-          }}>
-            <span>🌤️</span>
-            <span>{condition} — Depok</span>
-          </div>
+          <ProductHighlight />
         </div>
 
         {/* Middle Module: Product & News */}
