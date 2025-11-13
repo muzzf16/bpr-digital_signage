@@ -11,6 +11,7 @@ const Sidebar = ({
   menuItems = [],
   user = { name: 'Admin BPR', role: 'Super Admin' },
   onLogout = null,
+  onMenuItemClick = null, // Add onMenuItemClick prop
   className = ""
 }) => {
   return (
@@ -48,6 +49,10 @@ const Sidebar = ({
               <li key={index}>
                 <Link
                   to={item.path}
+                  onClick={() => {
+                    if (onMenuItemClick) onMenuItemClick(item.path);
+                    if (toggleSidebar && isOpen) toggleSidebar(); // Close sidebar on mobile after click
+                  }}
                   className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                     item.active
                       ? 'bg-blue-700/50 text-white'

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from './ui/Sidebar';
-import Header from './ui/Header';
+import AdminLayout from '../../admin/AdminLayout'; // Import AdminLayout
 import PlaylistManager from './content/PlaylistManager';
 import RateManager from './rates/RateManager';
-import DeviceManager from './devices/DeviceManager';
 import NewsManager from './content/NewsManager';
 import EconomicManager from './economic/EconomicManager';
 import DisplaySettingsManager from './system/DisplaySettingsManager';
@@ -17,10 +15,11 @@ import {
 } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { fetchWithAuth } from '../../utils/api';
 
 // Dashboard component with routing
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Set to true by default for desktop view
   const location = useLocation();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -33,9 +32,11 @@ const Dashboard = () => {
     rateChange: 0
   });
 
+  const [activeMenuItem, setActiveMenuItem] = useState('dashboard');
+
   useEffect(() => {
     // Fetch dashboard statistics
-    fetch('/api/admin/dashboard-stats')
+    fetchWithAuth('/api/admin/dashboard-stats')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -77,28 +78,9 @@ const Dashboard = () => {
     
     // Set active menu item based on current path
     const path = location.pathname;
-    if (path === '/admin/devices') {
-      setActiveMenuItem('devices');
-    } else if (path === '/admin/playlists') {
-      setActiveMenuItem('playlists');
-    } else if (path === '/admin/rates') {
-      setActiveMenuItem('rates');
-    } else if (path === '/admin/news') {
-      setActiveMenuItem('news');
-    } else if (path === '/admin/economic') {
-      setActiveMenuItem('economic');
-    } else if (path === '/admin/settings') {
-      setActiveMenuItem('settings');
-    } else {
-      setActiveMenuItem('dashboard');
-    }
+    const currentKey = path.split('/')[2] || 'dashboard';
+    setActiveMenuItem(currentKey);
   }, [location.pathname]);
-
-  const [activeMenuItem, setActiveMenuItem] = useState('dashboard');
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   const handleMenuItemClick = (path) => {
     navigate(path);
@@ -228,7 +210,7 @@ const Dashboard = () => {
 
           <div className="admin-grid gap-6">
             <div className="col-12">
-              <DeviceManager />
+              <DevicesPage />
             </div>
           </div>
         </>
@@ -237,48 +219,27 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="admin-root">
-      <div className="admin-wrapper">
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          toggleSidebar={toggleSidebar} 
-          menuItems={menuItems.map(item => ({
-            ...item,
-            active: activeMenuItem === item.key
-          }))}
-          user={{ name: 'Admin BPR', role: 'Super Admin' }}
-          onLogout={() => toast.info("Logout functionality would go here")}
-        />
-
-        <div className="admin-main">
-          <Header 
-            title="Bank Perekonomian Rakyat - Admin Dashboard" 
-            showSearch={true}
-            showNotifications={true}
-            notificationCount={3}
-            onSearch={(value) => console.log("Searching for:", value)}
-            onNotificationClick={() => toast.info("Notifications clicked")}
-          />
-
-          <div className="admin-content">
-            {renderContent()}
-          </div>
-        </div>
-
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
-      </div>
-    </div>
+    <AdminLayout 
+      sidebarOpen={sidebarOpen}
+      setSidebarOpen={setSidebarOpen}
+      menuItems={menuItems}
+      activeMenuItem={activeMenuItem}
+      handleMenuItemClick={handleMenuItemClick}
+    >
+      {renderContent()}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+    </AdminLayout>
   );
 };
 
