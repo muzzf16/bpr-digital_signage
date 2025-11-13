@@ -166,6 +166,62 @@ function initializeTables() {
       created_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
     )
   `);
+
+  // Create users table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'editor',
+      created_at DATETIME DEFAULT (CURRENT_TIMESTAMP),
+      updated_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
+    );
+  `);
+
+  // Create news table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS news (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      source TEXT,
+      link TEXT,
+      category TEXT,
+      is_breaking BOOLEAN DEFAULT 0,
+      publish_date DATETIME,
+      created_at DATETIME DEFAULT (CURRENT_TIMESTAMP),
+      updated_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
+    );
+  `);
+
+  // Create economic_data table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS economic_data (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL,
+      key TEXT NOT NULL,
+      value TEXT NOT NULL,
+      date DATETIME,
+      notes TEXT,
+      created_at DATETIME DEFAULT (CURRENT_TIMESTAMP),
+      updated_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
+    );
+  `);
+
+  // Create display_settings table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS display_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT NOT NULL UNIQUE,
+      value TEXT,
+      created_at DATETIME DEFAULT (CURRENT_TIMESTAMP),
+      updated_at DATETIME DEFAULT (CURRENT_TIMESTAMP)
+    );
+  `);
+
+  // Create an index on username for faster lookups
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);`);
 }
 
 // Initialize tables
@@ -206,6 +262,42 @@ function createTriggers() {
     AFTER UPDATE ON playlists
     BEGIN
       UPDATE playlists SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END
+  `);
+
+  // Users trigger
+  db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_users_updated_at
+    AFTER UPDATE ON users
+    BEGIN
+      UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END
+  `);
+
+  // News trigger
+  db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_news_updated_at
+    AFTER UPDATE ON news
+    BEGIN
+      UPDATE news SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END
+  `);
+
+  // Economic data trigger
+  db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_economic_data_updated_at
+    AFTER UPDATE ON economic_data
+    BEGIN
+      UPDATE economic_data SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END
+  `);
+
+  // Display settings trigger
+  db.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_display_settings_updated_at
+    AFTER UPDATE ON display_settings
+    BEGIN
+      UPDATE display_settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
     END
   `);
 }

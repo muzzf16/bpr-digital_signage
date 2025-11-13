@@ -17,7 +17,7 @@ const Header = ({
   };
 
   return (
-    <header className={`bg-gradient-to-r from-blue-900/80 to-blue-800/80 backdrop-blur-lg border-b border-blue-700/50 p-4 flex items-center justify-between ${className}`}>
+    <header className={`admin-header flex items-center justify-between ${className}`}>
       <div className="flex items-center space-x-3">
         <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 p-2 rounded-lg">
           <FaHome className="text-blue-900" />

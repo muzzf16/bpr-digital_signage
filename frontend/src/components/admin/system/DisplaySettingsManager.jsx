@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCog, FaPalette, FaVolumeUp, FaClock, FaSun, FaSave, FaUndo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
 
 const DisplaySettingsManager = () => {
   const [settings, setSettings] = useState({
@@ -18,26 +19,47 @@ const DisplaySettingsManager = () => {
     refreshInterval: 300
   });
 
+  const loadSettings = () => {
+    fetchWithAuth('/api/admin/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(prev => ({ ...prev, ...data.settings }));
+        } else {
+          toast.error('Failed to load display settings.');
+        }
+      })
+      .catch(err => {
+        console.error("Error loading settings:", err);
+        toast.error('Failed to load display settings.');
+      });
+  };
+
   useEffect(() => {
-    // Load existing settings (currently using defaults)
-    // In a real implementation, you would fetch this from the API
     loadSettings();
   }, []);
 
-  const loadSettings = () => {
-    // For now, we're using default settings
-    // In a real implementation, fetch settings from backend API
-    toast.info('Loading display settings...');
-  };
-
   const saveSettings = () => {
-    // In a real implementation, send settings to the backend API
-    console.log('Saving display settings:', settings);
-    toast.success('Display settings saved successfully!');
+    fetchWithAuth('/api/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        toast.success('Display settings saved successfully!');
+      } else {
+        toast.error('Failed to save display settings.');
+      }
+    })
+    .catch(err => {
+      console.error("Error saving settings:", err);
+      toast.error('Failed to save display settings.');
+    });
   };
 
   const resetSettings = () => {
-    setSettings({
+    const defaultSettings = {
       brightness: 100,
       contrast: 50,
       volume: 50,
@@ -50,7 +72,8 @@ const DisplaySettingsManager = () => {
       theme: 'default',
       playlist: 'default',
       refreshInterval: 300
-    });
+    };
+    setSettings(defaultSettings);
     toast.info('Settings reset to default values');
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaFilm, FaPlus, FaEdit, FaTrash, FaPlay, FaPause, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
 
 const PlaylistManager = () => {
   const [playlists, setPlaylists] = useState([]);
@@ -9,7 +10,7 @@ const PlaylistManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/playlists')
+    fetchWithAuth('/api/admin/playlists')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -30,12 +31,8 @@ const PlaylistManager = () => {
 
   const handleDelete = (item) => {
     if (window.confirm(`Are you sure you want to delete the playlist "${item.name}"?`)) {
-      fetch(`/api/admin/playlists/${item.id}`, {
+      fetchWithAuth(`/api/admin/playlists/${item.id}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'secret_dev_key'
-        }
       })
       .then(res => res.json())
       .then(data => {
@@ -65,7 +62,7 @@ const PlaylistManager = () => {
 
   // Filter playlists based on search term
   const filteredPlaylists = playlists.filter(playlist =>
-    playlist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    playlist.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     playlist.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -159,7 +156,7 @@ const PlaylistManager = () => {
                     <span className="px-2 py-1 bg-blue-800/40 text-blue-200 rounded text-sm">{row.items} items</span>
                   </td>
                   <td className="align-top">
-                    <span className={`status-badge ${row.status.toLowerCase()}`}>
+                    <span className={`status-badge ${row.status?.toLowerCase()}`}>
                       <span className={`w-2 h-2 rounded-full mr-2 ${
                         row.status === 'Active' ? 'bg-green-400' :
                         row.status === 'Scheduled' ? 'bg-yellow-400' :

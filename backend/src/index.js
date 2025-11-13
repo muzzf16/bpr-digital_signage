@@ -16,9 +16,14 @@ import adminDeviceStatusRouter from './routes/admin/deviceStatus.js';
 import adminPlaylistsRouter from './routes/admin/playlists.js';
 import adminPromosRouter from './routes/admin/promos.js';
 import adminRatesRouter from './routes/admin/rates.js';
+import adminDashboardRouter from './routes/admin/dashboard.js';
+import adminNewsRouter from './routes/admin/news.js';
+import adminEconomicRouter from './routes/admin/economic.js';
+import adminDisplaySettingsRouter from './routes/admin/displaySettings.js';
 import playlistRouter from './routes/playlist.js';
 import uploadsRouter from './routes/uploads.js';
 import devicesRouter from './routes/devices.js';
+import ratesRouter from './routes/rates.js';
 import authRouter from './routes/auth.js';
 import { authenticateJWT } from './utils/auth.js';
 
@@ -39,13 +44,16 @@ app.use(cors());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 1000 // limit each IP to 1000 requests per windowMs
 });
 app.use(limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Authentication routes (publicly accessible)
+app.use('/api/auth', authRouter);
 
 // API key middleware
 app.use((req, res, next) => {
@@ -78,7 +86,6 @@ app.use(`/${ASSETS_PATH}`, express.static(path.join(__dirname, '..', ASSETS_PATH
 app.use('/public/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
 // Routes
-app.use('/api/auth', authRouter); // Authentication routes
 app.use('/api/devices', devicesRouter); // Updated to use new devices router
 app.use('/api/uploads', uploadsRouter); // New uploads route
 app.use('/api/admin/announcements', adminAnnouncementsRouter);
@@ -90,6 +97,11 @@ app.use('/api/admin/device-status', adminDeviceStatusRouter);
 app.use('/api/admin/playlists', adminPlaylistsRouter);
 app.use('/api/admin/promos', adminPromosRouter);
 app.use('/api/admin/rates', adminRatesRouter);
+app.use('/api/admin/news', adminNewsRouter);
+app.use('/api/admin/economic', adminEconomicRouter);
+app.use('/api/admin/settings', adminDisplaySettingsRouter);
+app.use('/api/rates', ratesRouter);
+app.use('/api/admin', adminDashboardRouter);
 app.use('/api/economic', economicRouter);
 app.use('/api/playlist', playlistRouter); // Keep existing route for compatibility
 app.get('/', (req, res) => {

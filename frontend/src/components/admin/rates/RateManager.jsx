@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaMoneyBillAlt, FaPlus, FaEdit, FaTrash, FaDownload, FaSearch, FaPercent } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
 
 const RateManager = () => {
   const [rates, setRates] = useState([]);
@@ -16,19 +17,19 @@ const RateManager = () => {
   });
 
   useEffect(() => {
-    fetch('/api/admin/rates')
+    fetchWithAuth('/api/admin/rates')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           // Transform the data to match our expected structure
           const formattedRates = data.products.map((product, idx) => ({
-            id: idx + 1,
+            id: product.id || idx + 1,
             name: product.name || `Product ${idx + 1}`,
-            rate: product.rate || 0,
+            rate: product.interest_rate || 0,
             currency: product.currency || 'IDR',
-            description: product.description || 'No description',
-            status: product.status || 'Draft',
-            lastUpdated: product.lastUpdated || new Date().toISOString()
+            description: product.terms || 'No description',
+            status: product.published ? 'Published' : 'Draft',
+            lastUpdated: product.updated_at || new Date().toISOString()
           }));
           setRates(formattedRates);
         }
@@ -36,36 +37,6 @@ const RateManager = () => {
       .catch(err => {
         console.error("Error fetching rates:", err);
         toast.error("Failed to fetch rates.");
-        // Fallback to mock data
-        setRates([
-          {
-            id: 1,
-            name: 'Tabungan Berjangka',
-            rate: 7.5,
-            currency: 'IDR',
-            description: 'Tabungan dengan jangka waktu tertentu',
-            status: 'Published',
-            lastUpdated: '2025-10-15'
-          },
-          {
-            id: 2,
-            name: 'Deposito Rupiah',
-            rate: 6.8,
-            currency: 'IDR',
-            description: 'Deposito dalam mata uang Rupiah',
-            status: 'Published',
-            lastUpdated: '2025-10-20'
-          },
-          {
-            id: 3,
-            name: 'Kredit Multiguna',
-            rate: 12.5,
-            currency: 'IDR',
-            description: 'Kredit untuk berbagai keperluan',
-            status: 'Draft',
-            lastUpdated: '2025-11-01'
-          }
-        ]);
       });
   }, []);
 
@@ -84,12 +55,8 @@ const RateManager = () => {
 
   const handleDelete = (item) => {
     if (window.confirm(`Are you sure you want to delete the rate "${item.name}"?`)) {
-      fetch(`/api/admin/rates/${item.id}`, {
+      fetchWithAuth(`/api/admin/rates/${item.id}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'secret_dev_key'
-        }
       })
       .then(res => res.json())
       .then(data => {
@@ -158,9 +125,9 @@ const RateManager = () => {
 
   // Filter rates based on search term
   const filteredRates = rates.filter(rate =>
-    rate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    rate.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    rate.currency.toLowerCase().includes(searchTerm.toLowerCase())
+    rate.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rate.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rate.currency?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const exportToCSV = () => {
@@ -272,7 +239,7 @@ const RateManager = () => {
                     <span className="px-2 py-1 bg-purple-800/40 text-purple-200 rounded text-sm">{row.currency}</span>
                   </td>
                   <td className="align-top">
-                    <span className={`status-badge ${row.status.toLowerCase()}`}>
+                    <span className={`status-badge ${row.status?.toLowerCase()}`}>
                       <span className={`w-2 h-2 rounded-full mr-2 ${
                         row.status === 'Published' ? 'bg-green-400' :
                         row.status === 'Scheduled' ? 'bg-yellow-400' :

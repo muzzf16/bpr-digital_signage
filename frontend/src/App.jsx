@@ -26,15 +26,54 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PlayerApp deviceId={deviceId} />} />
+        
+        {/* Admin routes with proper nested routing */}
         <Route path="/admin" element={<ProtectedRoute />}>
-          <Route
-            path="*" // Catch all admin routes
-            element={
-              <AdminLayout>
-                <Dashboard />
-              </AdminLayout>
-            }
-          />
+          <Route index element={
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
+          } />
+          <Route path="dashboard" element={
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
+          } />
+          <Route path="playlists" element={
+            <AdminLayout>
+              <PlaylistManager />
+            </AdminLayout>
+          } />
+          <Route path="rates" element={
+            <AdminLayout>
+              <RateManager />
+            </AdminLayout>
+          } />
+          <Route path="news" element={
+            <AdminLayout>
+              <NewsManager />
+            </AdminLayout>
+          } />
+          <Route path="economic" element={
+            <AdminLayout>
+              <EconomicManager />
+            </AdminLayout>
+          } />
+          <Route path="settings" element={
+            <AdminLayout>
+              <DisplaySettingsManager />
+            </AdminLayout>
+          } />
+          <Route path="announcements" element={
+            <AdminLayout>
+              <AnnouncementsManager />
+            </AdminLayout>
+          } />
+          <Route path="devices" element={
+            <AdminLayout>
+              <DevicesPage />
+            </AdminLayout>
+          } />
         </Route>
       </Routes>
     </Router>

@@ -1,69 +1,30 @@
-import db, { query, get, all } from '../db/index.js';
+import playlistItemRepository from '../repositories/playlistItemRepository.js';
 
 // Playlist Items service functions
 const playlistItemService = {
   // Create a new playlist item
   async createPlaylistItem(itemData) {
-    const { 
-      playlist_id,
-      position, 
-      item_type, 
-      item_ref,
-      metadata,
-      duration_sec,
-      active
-    } = itemData;
-    
-    const sql = `
-      INSERT INTO playlist_items (playlist_id, position, item_type, item_ref, metadata, duration_sec, active)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    const values = [playlist_id, position, item_type, item_ref, JSON.stringify(metadata), duration_sec, active];
-    const result = query(sql, values);
-    return this.getPlaylistItemById(result.lastInsertRowid);
+    return playlistItemRepository.create(itemData);
   },
 
   // Get playlist item by ID
   async getPlaylistItemById(id) {
-    const sql = 'SELECT * FROM playlist_items WHERE id = ?';
-    return get(sql, [id]);
+    return playlistItemRepository.findById(id);
   },
 
   // Get all items for a specific playlist
   async getPlaylistItemsByPlaylistId(playlistId) {
-    const sql = 'SELECT * FROM playlist_items WHERE playlist_id = ? AND active = 1 ORDER BY position';
-    return all(sql, [playlistId]);
+    return playlistItemRepository.findByPlaylistId(playlistId);
   },
 
   // Update playlist item
   async updatePlaylistItem(id, itemData) {
-    const fields = [];
-    const values = [];
-
-    for (const [key, value] of Object.entries(itemData)) {
-      if (key === 'metadata') {
-        // Special handling for metadata JSON field
-        fields.push(`${key} = ?`);
-        values.push(JSON.stringify(value));
-      } else {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
-    }
-
-    values.push(id); // For WHERE clause
-
-    const sql = `UPDATE playlist_items SET ${fields.join(', ')} WHERE id = ?`;
-    query(sql, values);
-    return this.getPlaylistItemById(id);
+    return playlistItemRepository.update(id, itemData);
   },
 
   // Update playlist item position
   async updateItemPosition(id, position) {
-    const sql = 'UPDATE playlist_items SET position = ? WHERE id = ?';
-    query(sql, [position, id]);
-    return this.getPlaylistItemById(id);
+    return playlistItemRepository.update(id, { position });
   },
 
   // Reorder playlist items
@@ -76,11 +37,8 @@ const playlistItemService = {
 
   // Delete playlist item
   async deletePlaylistItem(id) {
-    const sql = 'DELETE FROM playlist_items WHERE id = ?';
-    const item = await this.getPlaylistItemById(id);
-    query(sql, [id]);
-    return item;
-  }
+    return playlistItemRepository.remove(id);
+  },
 };
 
 export default playlistItemService;

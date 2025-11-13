@@ -27,9 +27,10 @@ const Sidebar = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed md:relative z-40 h-full w-64 bg-gradient-to-b from-blue-900/80 to-blue-800/80 backdrop-blur-lg border-r border-blue-700/50 transition-transform duration-300 ease-in-out transform ${
+        className={`admin-sidebar fixed md:relative z-40 h-full bg-gradient-to-b from-blue-900/80 to-blue-800/80 backdrop-blur-lg border-r border-blue-700/50 transition-transform duration-300 ease-in-out transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 ${className}`}
+        aria-hidden={!isOpen}
       >
         <div className="p-6 border-b border-blue-700/50">
           <div className="flex items-center space-x-3">

@@ -1,26 +1,26 @@
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
-const DataTable = ({ 
-  columns = [], 
-  data = [], 
-  onEdit, 
+const DataTable = ({
+  columns = [],
+  data = [],
+  onEdit,
   onDelete,
   emptyMessage = "No data available",
   className = ""
 }) => {
   // Memoize the table rows to prevent unnecessary re-renders
   const renderTableRows = () => data.map((row, rowIndex) => (
-    <tr key={rowIndex} className="hover:bg-white/5 transition-colors">
+    <tr key={rowIndex} className="admin-data-table-tr hover:bg-white/5 transition-colors">
       {columns.map((col, colIndex) => {
         const value = row[col.key];
         return (
-          <td key={colIndex} className="px-4 py-3 text-sm text-white">
+          <td key={colIndex} className="admin-data-table-td">
             {col.render ? col.render(value, row) : value}
           </td>
         );
       })}
-      <td className="px-4 py-3 text-right text-sm">
+      <td className="admin-data-table-td text-right text-sm">
         <div className="flex justify-end space-x-2">
           {onEdit && (
             <button
@@ -48,31 +48,31 @@ const DataTable = ({
   ));
 
   return (
-    <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-blue-700/50">
+    <div className={`table-wrapper ${className}`}>
+      <table className="admin-data-table">
         <thead>
           <tr>
             {columns.map((col, idx) => (
-              <th 
-                key={idx} 
-                className="px-4 py-3 text-left text-xs font-medium text-blue-200 uppercase tracking-wider"
+              <th
+                key={idx}
+                className="admin-data-table-th"
               >
                 {col.header}
               </th>
             ))}
-            <th className="px-4 py-3 text-right text-xs font-medium text-blue-200 uppercase tracking-wider">
+            <th className="admin-data-table-th text-right">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-blue-700/30">
+        <tbody>
           {data.length > 0 ? (
             renderTableRows()
           ) : (
             <tr>
-              <td 
-                colSpan={columns.length + 1} 
-                className="px-4 py-6 text-center text-sm text-blue-200"
+              <td
+                colSpan={columns.length + 1}
+                className="admin-data-table-td text-center"
               >
                 {emptyMessage}
               </td>

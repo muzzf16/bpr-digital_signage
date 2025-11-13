@@ -199,27 +199,6 @@ async function getCurrencyRates() {
 async function getGoldPrice() {
   const refreshSeconds = Number(process.env.REFRESH_GOLD_SECONDS || DEFAULT_GOLD_REFRESH_SECONDS);
   return cached('goldPrice', refreshSeconds, async () => {
-    // Try API-based approach first
-    try {
-      if (process.env.GOLD_API_KEY) {
-        const headers = {
-          'x-access-token': process.env.GOLD_API_KEY,
-          'Content-Type': 'application/json'
-        };
-        const response = await axios.get('https://www.goldapi.io/api/XAU/IDR', { headers });
-        if (response.status === 200 && response.data && response.data.price_gram) {
-          return {
-            gram: response.data.price_gram,
-            ounce: response.data.price_ounce,
-            fetchedAt: new Date().toISOString(),
-            source: 'goldapi.io'
-          };
-        }
-      }
-    } catch (error) {
-      console.warn('GoldAPI service error:', error.message);
-    }
-
     // Fallback to web scraping
     try {
       const response = await axios.get('https://emasantam.id/harga-emas-antam-harian/');
@@ -290,25 +269,6 @@ async function getStockIndex() {
       }
     } catch (error) {
       console.warn('Yahoo Finance API error:', error.message);
-    }
-
-    // Alternative API approach
-    try {
-      const response = await axios.get('https://api.stockdata.org/v1/data/quote?symbols=JKSE.JK&api_token=' + (process.env.STOCKDATA_API_TOKEN || ''));
-      if (response.status === 200 && response.data && response.data.data?.length > 0) {
-        const result = response.data.data[0];
-        return {
-          symbol: result.symbol,
-          name: 'IHSG',
-          price: result.price,
-          change: result.change,
-          changePercent: result.change_percent,
-          fetchedAt: new Date().toISOString(),
-          source: 'stockdata.org'
-        };
-      }
-    } catch (error) {
-      console.warn('StockData.org API error:', error.message);
     }
     
     // Fallback to web scraping - improved selectors

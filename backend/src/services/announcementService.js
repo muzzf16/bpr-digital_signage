@@ -1,72 +1,36 @@
-import db, { query, get, all } from '../db/index.js';
+import announcementRepository from '../repositories/announcementRepository.js';
 
 // Announcement service functions
 const announcementService = {
   // Create a new announcement
   async createAnnouncement(announcementData) {
-    const { 
-      message,
-      start_at,
-      end_at,
-      priority,
-      created_by
-    } = announcementData;
-    
-    const sql = `
-      INSERT INTO announcements (message, start_at, end_at, priority, created_by)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    
-    const values = [message, start_at, end_at, priority, created_by];
-    const result = query(sql, values);
-    return this.getAnnouncementById(result.lastInsertRowid);
+    return announcementRepository.create(announcementData);
   },
 
   // Get active announcements by priority (active now and ordered by priority)
   async getActiveAnnouncements() {
-    const sql = `SELECT * FROM announcements 
-                 WHERE (start_at IS NULL OR start_at <= CURRENT_TIMESTAMP) 
-                 AND (end_at IS NULL OR end_at >= CURRENT_TIMESTAMP)
-                 ORDER BY priority DESC, created_at DESC`;
-    return all(sql);
+    return announcementRepository.findActive();
   },
 
   // Get announcement by ID
   async getAnnouncementById(id) {
-    const sql = 'SELECT * FROM announcements WHERE id = ?';
-    return get(sql, [id]);
+    return announcementRepository.findById(id);
   },
 
   // Get all announcements
   async getAllAnnouncements() {
-    const sql = 'SELECT * FROM announcements ORDER BY created_at DESC';
-    return all(sql);
+    return announcementRepository.findAll();
   },
 
   // Update announcement
   async updateAnnouncement(id, announcementData) {
-    const fields = [];
-    const values = [];
-
-    for (const [key, value] of Object.entries(announcementData)) {
-      fields.push(`${key} = ?`);
-      values.push(value);
-    }
-
-    values.push(id); // For WHERE clause
-
-    const sql = `UPDATE announcements SET ${fields.join(', ')} WHERE id = ?`;
-    query(sql, values);
-    return this.getAnnouncementById(id);
+    return announcementRepository.update(id, announcementData);
   },
 
   // Delete announcement
   async deleteAnnouncement(id) {
-    const sql = 'DELETE FROM announcements WHERE id = ?';
-    const announcement = await this.getAnnouncementById(id);
-    query(sql, [id]);
-    return announcement;
-  }
+    return announcementRepository.remove(id);
+  },
 };
 
 export default announcementService;

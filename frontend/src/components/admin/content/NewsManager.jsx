@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaNewspaper, FaPlus, FaEdit, FaTrash, FaSearch, FaGlobe, FaBullhorn } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
 
 const NewsManager = () => {
   const [newsItems, setNewsItems] = useState([]);
@@ -12,45 +13,33 @@ const NewsManager = () => {
     source: '',
     link: '',
     category: 'economic',
-    isBreaking: false,
-    publishDate: new Date().toISOString().split('T')[0]
+    is_breaking: false,
+    publish_date: new Date().toISOString().split('T')[0]
   });
 
+  const fetchNews = () => {
+    fetchWithAuth('/api/admin/news')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const formattedNews = data.news.map(item => ({
+            ...item,
+            isBreaking: item.is_breaking,
+            publishDate: item.publish_date,
+          }));
+          setNewsItems(formattedNews);
+        } else {
+          toast.error('Failed to fetch news items.');
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching news:", err);
+        toast.error("Failed to fetch news items.");
+      });
+  };
+
   useEffect(() => {
-    // In a real implementation, this would fetch from the backend API
-    // For now, we'll simulate with mock data
-    setNewsItems([
-      {
-        id: 1,
-        title: 'BI pertahankan suku bunga acuan 6,5%',
-        source: 'CNBC Indonesia',
-        link: '#',
-        category: 'economic',
-        isBreaking: false,
-        timestamp: '2025-11-10T09:30:00Z',
-        publishDate: '2025-11-10'
-      },
-      {
-        id: 2,
-        title: 'IHSG menguat 0.34% di akhir sesi',
-        source: 'Kontan',
-        link: '#',
-        category: 'economic',
-        isBreaking: true,
-        timestamp: '2025-11-10T15:45:00Z',
-        publishDate: '2025-11-10'
-      },
-      {
-        id: 3,
-        title: 'Harga Emas Antam Turun Rp3.000 per Gram',
-        source: 'Antara News',
-        link: '#',
-        category: 'economic',
-        isBreaking: false,
-        timestamp: '2025-11-09T11:20:00Z',
-        publishDate: '2025-11-09'
-      }
-    ]);
+    fetchNews();
   }, []);
 
   const handleAddNews = () => {
@@ -59,23 +48,24 @@ const NewsManager = () => {
       return;
     }
 
-    const newsToAdd = {
-      id: newsItems.length + 1,
-      ...newNews,
-      timestamp: new Date().toISOString()
-    };
-
-    setNewsItems([newsToAdd, ...newsItems]); // Add to the top
-    setNewNews({
-      title: '',
-      source: '',
-      link: '',
-      category: 'economic',
-      isBreaking: false,
-      publishDate: new Date().toISOString().split('T')[0]
+    fetchWithAuth('/api/admin/news', {
+      method: 'POST',
+      body: JSON.stringify(newNews),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchNews();
+        setIsModalOpen(false);
+        toast.success('News item added successfully!');
+      } else {
+        toast.error('Failed to add news item.');
+      }
+    })
+    .catch(err => {
+      console.error("Error adding news:", err);
+      toast.error('Failed to add news item.');
     });
-    setIsModalOpen(false);
-    toast.success('News item added successfully!');
   };
 
   const handleEdit = (item) => {
@@ -85,16 +75,30 @@ const NewsManager = () => {
       source: item.source,
       link: item.link,
       category: item.category,
-      isBreaking: item.isBreaking,
-      publishDate: item.publishDate
+      is_breaking: item.isBreaking,
+      publish_date: item.publishDate.split('T')[0]
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this news item?')) {
-      setNewsItems(newsItems.filter(item => item.id !== id));
-      toast.success('News item deleted successfully!');
+      fetchWithAuth(`/api/admin/news/${id}`, {
+        method: 'DELETE',
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          fetchNews();
+          toast.success('News item deleted successfully!');
+        } else {
+          toast.error('Failed to delete news item.');
+        }
+      })
+      .catch(err => {
+        console.error("Error deleting news:", err);
+        toast.error('Failed to delete news item.');
+      });
     }
   };
 
@@ -104,21 +108,24 @@ const NewsManager = () => {
       return;
     }
 
-    setNewsItems(newsItems.map(item =>
-      item.id === selectedNews.id ? { ...item, ...newNews } : item
-    ));
-
-    setSelectedNews(null);
-    setIsModalOpen(false);
-    setNewNews({
-      title: '',
-      source: '',
-      link: '',
-      category: 'economic',
-      isBreaking: false,
-      publishDate: new Date().toISOString().split('T')[0]
+    fetchWithAuth(`/api/admin/news/${selectedNews.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(newNews),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchNews();
+        setIsModalOpen(false);
+        toast.success('News item updated successfully!');
+      } else {
+        toast.error('Failed to update news item.');
+      }
+    })
+    .catch(err => {
+      console.error("Error updating news:", err);
+      toast.error('Failed to update news item.');
     });
-    toast.success('News item updated successfully!');
   };
 
   const handleInputChange = (e) => {
@@ -357,8 +364,8 @@ const NewsManager = () => {
                     <label className="label">Publish Date</label>
                     <input
                       type="date"
-                      name="publishDate"
-                      value={newNews.publishDate}
+                      name="publish_date"
+                      value={newNews.publish_date}
                       onChange={handleInputChange}
                       className="input"
                     />
@@ -368,8 +375,8 @@ const NewsManager = () => {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    name="isBreaking"
-                    checked={newNews.isBreaking}
+                    name="is_breaking"
+                    checked={newNews.is_breaking}
                     onChange={handleInputChange}
                     className="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                   />

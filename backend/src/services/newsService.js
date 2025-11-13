@@ -2,6 +2,7 @@ import RSSParser from 'rss-parser';
 import axios from 'axios';
 import { cached } from './cacheService.js';
 import logger from './loggerService.js';
+import newsRepository from '../repositories/newsRepository.js';
 
 // Constants
 const DEFAULT_NEWS_REFRESH_SECONDS = 900; // 15 minutes
@@ -12,10 +13,10 @@ const MAX_TOTAL_NEWS_ITEMS = 12;
 const parser = new RSSParser();
 
 /**
- * Get cached news
+ * Get cached news from RSS feeds
  * @returns {array} Array of news items
  */
-async function getNews() {
+async function getNewsFromRSS() {
   const refreshSeconds = Number(process.env.REFRESH_NEWS_SECONDS || DEFAULT_NEWS_REFRESH_SECONDS);
   return cached('newsFeed', refreshSeconds, async () => {
     const feedUrls = (process.env.NEWS_FEEDS || DEFAULT_NEWS_FEED_URL)
@@ -59,4 +60,29 @@ async function getNews() {
   });
 }
 
-export { getNews };
+const newsService = {
+  getNewsFromRSS,
+
+  getAllNews: () => {
+    return newsRepository.findAll();
+  },
+
+  getNewsById: (id) => {
+    return newsRepository.findById(id);
+  },
+
+  createNews: (newsItem) => {
+    return newsRepository.create(newsItem);
+  },
+
+  updateNews: (id, newsItem) => {
+    return newsRepository.update(id, newsItem);
+  },
+
+  deleteNews: (id) => {
+    return newsRepository.delete(id);
+  },
+};
+
+export default newsService;
+export const getNews = getNewsFromRSS;

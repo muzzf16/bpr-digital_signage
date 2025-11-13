@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import AdminLayout from '../../admin/AdminLayout'; // Import AdminLayout
+import { useLocation, useNavigate } from 'react-router-dom';
+import AdminLayout from '../../admin/AdminLayout'; // Import the updated AdminLayout
 import PlaylistManager from './content/PlaylistManager';
 import RateManager from './rates/RateManager';
 import NewsManager from './content/NewsManager';
@@ -17,7 +17,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchWithAuth } from '../../utils/api';
 
-// Dashboard component with routing
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Set to true by default for desktop view
   const location = useLocation();
@@ -75,7 +74,7 @@ const Dashboard = () => {
           rateChange: 1
         });
       });
-    
+
     // Set active menu item based on current path
     const path = location.pathname;
     const currentKey = path.split('/')[2] || 'dashboard';
@@ -99,134 +98,108 @@ const Dashboard = () => {
     { icon: <FaBullhorn />, label: 'Announcements', path: '/admin/announcements', key: 'announcements' },
   ];
 
-  const renderContent = () => {
-    if (location.pathname === '/admin/devices') {
-      return <DevicesPage />;
-    } else if (location.pathname === '/admin/playlists') {
-      return <PlaylistManager />;
-    } else if (location.pathname === '/admin/rates') {
-      return <RateManager />;
-    } else if (location.pathname === '/admin/news') {
-      return <NewsManager />;
-    } else if (location.pathname === '/admin/economic') {
-      return <EconomicManager />;
-    } else if (location.pathname === '/admin/settings') {
-      return <DisplaySettingsManager />;
-    } else if (location.pathname === '/admin/announcements') {
-      return <AnnouncementsManager />;
-    } else {
-      // Dashboard content
-      return (
-        <>
-          {/* Stats Overview */}
-          <div className="admin-grid mb-8">
-            <div className="col-3">
-              <div className="glass-card bg-gradient-to-br from-blue-600/20 to-blue-800/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-200 text-sm">Total Playlists</p>
-                    <h3 className="text-2xl font-bold text-white mt-1">{stats.totalPlaylists}</h3>
-                  </div>
-                  <div className="bg-blue-500/20 p-3 rounded-full">
-                    <FaFilm className="text-blue-300 text-xl" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-3">
-                  <span className={`text-xs flex items-center ${stats.playlistChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.playlistChange >= 0 ? <FaArrowUp className="mr-1" /> : <FaArrowDown className="mr-1" />}
-                    {Math.abs(stats.playlistChange)} from last week
-                  </span>
-                </div>
+  return (
+    <AdminLayout>
+      <>
+        {/* Stats Overview */}
+        <div className="dashboard-stats-grid">
+          <div className="dashboard-stat-card">
+            <div className="dashboard-stat-header">
+              <div>
+                <p className="dashboard-stat-label">Total Playlists</p>
+                <h3 className="dashboard-stat-value">{stats.totalPlaylists}</h3>
+              </div>
+              <div className="dashboard-stat-icon blue">
+                <FaFilm />
               </div>
             </div>
-
-            <div className="col-3">
-              <div className="glass-card bg-gradient-to-br from-green-600/20 to-green-800/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-200 text-sm">Active Devices</p>
-                    <h3 className="text-2xl font-bold text-white mt-1">{stats.activeDevices}</h3>
-                  </div>
-                  <div className="bg-green-500/20 p-3 rounded-full">
-                    <FaDesktop className="text-green-300 text-xl" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-3">
-                  <span className={`text-xs flex items-center ${stats.deviceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.deviceChange >= 0 ? <FaArrowUp className="mr-1" /> : <FaArrowDown className="mr-1" />}
-                    {Math.abs(stats.deviceChange)} from last week
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-3">
-              <div className="glass-card bg-gradient-to-br from-purple-600/20 to-purple-800/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-200 text-sm">Interest Rates</p>
-                    <h3 className="text-2xl font-bold text-white mt-1">{stats.totalRates}</h3>
-                  </div>
-                  <div className="bg-purple-500/20 p-3 rounded-full">
-                    <FaMoneyBillAlt className="text-purple-300 text-xl" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-3">
-                  <span className={`text-xs flex items-center ${stats.rateChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.rateChange >= 0 ? <FaArrowUp className="mr-1" /> : <FaArrowDown className="mr-1" />}
-                    {Math.abs(stats.rateChange)} from last week
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-3">
-              <div className="glass-card bg-gradient-to-br from-yellow-600/20 to-yellow-800/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-yellow-200 text-sm">Pending Updates</p>
-                    <h3 className="text-2xl font-bold text-white mt-1">{stats.pendingUpdates}</h3>
-                  </div>
-                  <div className="bg-yellow-500/20 p-3 rounded-full">
-                    <FaCog className="text-yellow-300 text-xl" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <span className="text-xs text-yellow-400">Requires attention</span>
-                </div>
-              </div>
+            <div className="dashboard-stat-trend">
+              <span className={`flex items-center ${stats.playlistChange >= 0 ? 'positive' : 'negative'}`}>
+                {stats.playlistChange >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                {Math.abs(stats.playlistChange)} from last week
+              </span>
             </div>
           </div>
 
-          {/* Management Sections */}
-          <div className="admin-grid mb-8 gap-6">
-            <div className="col-6">
+          <div className="dashboard-stat-card">
+            <div className="dashboard-stat-header">
+              <div>
+                <p className="dashboard-stat-label">Active Devices</p>
+                <h3 className="dashboard-stat-value">{stats.activeDevices}</h3>
+              </div>
+              <div className="dashboard-stat-icon green">
+                <FaDesktop />
+              </div>
+            </div>
+            <div className="dashboard-stat-trend">
+              <span className={`flex items-center ${stats.deviceChange >= 0 ? 'positive' : 'negative'}`}>
+                {stats.deviceChange >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                {Math.abs(stats.deviceChange)} from last week
+              </span>
+            </div>
+          </div>
+
+          <div className="dashboard-stat-card">
+            <div className="dashboard-stat-header">
+              <div>
+                <p className="dashboard-stat-label">Interest Rates</p>
+                <h3 className="dashboard-stat-value">{stats.totalRates}</h3>
+              </div>
+              <div className="dashboard-stat-icon purple">
+                <FaMoneyBillAlt />
+              </div>
+            </div>
+            <div className="dashboard-stat-trend">
+              <span className={`flex items-center ${stats.rateChange >= 0 ? 'positive' : 'negative'}`}>
+                {stats.rateChange >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                {Math.abs(stats.rateChange)} from last week
+              </span>
+            </div>
+          </div>
+
+          <div className="dashboard-stat-card">
+            <div className="dashboard-stat-header">
+              <div>
+                <p className="dashboard-stat-label">Pending Updates</p>
+                <h3 className="dashboard-stat-value">{stats.pendingUpdates}</h3>
+              </div>
+              <div className="dashboard-stat-icon yellow">
+                <FaCog />
+              </div>
+            </div>
+            <div className="dashboard-stat-trend">
+              <span className="text-yellow-400">
+                Requires attention
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Management Sections */}
+        <div className="admin-grid mb-8 gap-6">
+          <div className="col-6">
+            <div className="dashboard-content-section">
+              <h3>Playlist Overview</h3>
               <PlaylistManager />
             </div>
-            <div className="col-6">
+          </div>
+          <div className="col-6">
+            <div className="dashboard-content-section">
+              <h3>Rate Overview</h3>
               <RateManager />
             </div>
           </div>
+        </div>
 
-          <div className="admin-grid gap-6">
-            <div className="col-12">
+        <div className="admin-grid gap-6">
+          <div className="col-12">
+            <div className="dashboard-content-section">
+              <h3>Device Status</h3>
               <DevicesPage />
             </div>
           </div>
-        </>
-      );
-    }
-  };
-
-  return (
-    <AdminLayout 
-      sidebarOpen={sidebarOpen}
-      setSidebarOpen={setSidebarOpen}
-      menuItems={menuItems}
-      activeMenuItem={activeMenuItem}
-      handleMenuItemClick={handleMenuItemClick}
-    >
-      {renderContent()}
+        </div>
+      </>
       <ToastContainer
         position="top-right"
         autoClose={3000}
