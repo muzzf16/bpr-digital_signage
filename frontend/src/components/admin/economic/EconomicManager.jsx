@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaChartLine, FaDollarSign, FaCoins, FaSync, FaSearch, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaChartLine, FaDollarSign, FaCoins, FaSync, FaSearch, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
 
 const EconomicManager = () => {
   const [economicData, setEconomicData] = useState({
-    currencyRates: { USD: 0, SGD: 0, JPY: 0, EUR: 0 },
-    goldPrice: { gram: 0 },
-    stockIndex: { IHSG: 0 },
+    currencyRates: {},
+    goldPrice: {},
+    stockIndex: {},
     updateHistory: []
   });
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,57 +21,42 @@ const EconomicManager = () => {
     notes: ''
   });
 
-  useEffect(() => {
-    // In a real implementation, this would fetch from the backend API
-    // For now, we'll simulate with mock data
-    setEconomicData({
-      currencyRates: {
-        USD: 15950,
-        SGD: 11800,
-        JPY: 105.5,
-        EUR: 17200
-      },
-      goldPrice: { gram: 1250000 },
-      stockIndex: { IHSG: 7150.25 },
-      updateHistory: [
-        { id: 1, type: 'currency', key: 'USD', value: 15950, date: '2025-11-10', notes: 'Daily update' },
-        { id: 2, type: 'stockIndex', key: 'IHSG', value: 7150.25, date: '2025-11-10', notes: 'Market close' },
-        { id: 3, type: 'gold', key: 'gram', value: 1250000, date: '2025-11-10', notes: 'Daily update' }
-      ]
+  const processEconomicData = (data) => {
+    const currencyRates = {};
+    const goldPrice = {};
+    const stockIndex = {};
+    data.forEach(item => {
+      if (item.type === 'currency') {
+        currencyRates[item.key] = item.value;
+      } else if (item.type === 'gold') {
+        goldPrice[item.key] = item.value;
+      } else if (item.type === 'stockIndex') {
+        stockIndex[item.key] = item.value;
+      }
     });
-  }, []);
+    return { currencyRates, goldPrice, stockIndex, updateHistory: data };
+  };
 
   const fetchEconomicData = () => {
-    toast.info('Refreshing economic data...');
-    // In a real implementation, fetch data from backend API
+    fetchWithAuth('/api/admin/economic')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const processedData = processEconomicData(data.economicData);
+          setEconomicData(processedData);
+        } else {
+          toast.error('Failed to fetch economic data.');
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching economic data:", err);
+        toast.error("Failed to fetch economic data.");
+      });
   };
 
-  const updateEconomicData = (type, key, value) => {
-    const updatedData = { ...economicData };
-
-    if (type === 'currency') {
-      updatedData.currencyRates = { ...updatedData.currencyRates, [key]: parseFloat(value) };
-    } else if (type === 'gold') {
-      updatedData.goldPrice = { ...updatedData.goldPrice, [key]: parseFloat(value) };
-    } else if (type === 'stockIndex') {
-      updatedData.stockIndex = { ...updatedData.stockIndex, [key]: parseFloat(value) };
-    }
-
-    // Add to history
-    const historyItem = {
-      id: economicData.updateHistory.length + 1,
-      type,
-      key,
-      value: parseFloat(value),
-      date: new Date().toISOString().split('T')[0],
-      notes: 'Manual update'
-    };
-
-    updatedData.updateHistory = [historyItem, ...updatedData.updateHistory];
-
-    setEconomicData(updatedData);
-    toast.success(`${type} (${key}) updated to ${value}`);
-  };
+  useEffect(() => {
+    fetchEconomicData();
+  }, []);
 
   const handleAddData = () => {
     if (!newData.type || !newData.key || !newData.value) {
@@ -78,15 +64,71 @@ const EconomicManager = () => {
       return;
     }
 
-    updateEconomicData(newData.type, newData.key, newData.value);
-    setIsModalOpen(false);
-    setNewData({
-      type: 'currency',
-      key: '',
-      value: '',
-      date: new Date().toISOString().split('T')[0],
-      notes: ''
+    fetchWithAuth('/api/admin/economic', {
+      method: 'POST',
+      body: JSON.stringify(newData),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchEconomicData();
+        setIsModalOpen(false);
+        toast.success('Economic data added successfully!');
+      } else {
+        toast.error('Failed to add economic data.');
+      }
+    })
+    .catch(err => {
+      console.error("Error adding economic data:", err);
+      toast.error('Failed to add economic data.');
     });
+  };
+
+  const handleUpdateData = () => {
+    if (!newData.type || !newData.key || !newData.value) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    fetchWithAuth(`/api/admin/economic/${selectedItem.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(newData),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchEconomicData();
+        setIsModalOpen(false);
+        toast.success('Economic data updated successfully!');
+      } else {
+        toast.error('Failed to update economic data.');
+      }
+    })
+    .catch(err => {
+      console.error("Error updating economic data:", err);
+      toast.error('Failed to update economic data.');
+    });
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this economic data item?')) {
+      fetchWithAuth(`/api/admin/economic/${id}`, {
+        method: 'DELETE',
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          fetchEconomicData();
+          toast.success('Economic data item deleted successfully!');
+        } else {
+          toast.error('Failed to delete economic data item.');
+        }
+      })
+      .catch(err => {
+        console.error("Error deleting economic data:", err);
+        toast.error('Failed to delete economic data item.');
+      });
+    }
   };
 
   const handleInputChange = (e) => {
@@ -95,6 +137,15 @@ const EconomicManager = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (selectedItem) {
+      handleUpdateData();
+    } else {
+      handleAddData();
+    }
   };
 
   const filteredHistory = economicData.updateHistory.filter(item =>
@@ -162,7 +213,7 @@ const EconomicManager = () => {
                 {Object.entries(economicData.currencyRates).map(([key, value]) => (
                   <div key={key} className="flex justify-between text-white">
                     <span>{key}</span>
-                    <span className="font-medium">{value.toLocaleString()}</span>
+                    <span className="font-medium">{value?.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -174,13 +225,13 @@ const EconomicManager = () => {
               <h4 className="text-amber-200 text-sm mb-2">Gold Price</h4>
               <div className="flex justify-between text-white">
                 <span>Per Gram</span>
-                <span className="font-medium">Rp {economicData.goldPrice.gram.toLocaleString()}</span>
+                <span className="font-medium">Rp {economicData.goldPrice?.gram?.toLocaleString() || 0}</span>
               </div>
               <div className="mt-3 pt-3 border-t border-amber-700/50">
                 <h4 className="text-amber-200 text-sm mb-2">Stock Index</h4>
                 <div className="flex justify-between text-white">
                   <span>IHSG</span>
-                  <span className="font-medium">{economicData.stockIndex.IHSG.toFixed(2)}</span>
+                  <span className="font-medium">{economicData.stockIndex?.IHSG?.toFixed(2) || 0}</span>
                 </div>
               </div>
             </div>
@@ -238,7 +289,7 @@ const EconomicManager = () => {
                     <td className="align-top">{item.key}</td>
                     <td className="align-top">
                       {item.type === 'currency' || item.type === 'gold'
-                        ? new Intl.NumberFormat().toLocaleString()
+                        ? new Intl.NumberFormat().format(parseFloat(item.value))
                         : parseFloat(item.value).toFixed(2)}
                     </td>
                     <td className="align-top text-amber-200">{item.date}</td>
@@ -260,6 +311,13 @@ const EconomicManager = () => {
                         title="Edit"
                       >
                         <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="action-button"
+                        title="Delete"
+                      >
+                        <FaTrash />
                       </button>
                     </td>
                   </tr>
@@ -295,7 +353,7 @@ const EconomicManager = () => {
               </button>
             </div>
 
-            <div className="modal-body">
+            <form onSubmit={handleSubmit} className="modal-body">
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -366,19 +424,20 @@ const EconomicManager = () => {
 
               <div className="modal-footer">
                 <button
+                  type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="btn btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleAddData}
+                  type="submit"
                   className="btn btn-primary"
                 >
                   {selectedItem ? 'Update Data' : 'Add Data'}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { FaBullhorn, FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { fetchWithAuth } from '../../../utils/api';
+
+const priorityMap = {
+  low: 1,
+  medium: 10,
+  high: 20,
+};
+
+const reversePriorityMap = {
+  1: 'low',
+  10: 'medium',
+  20: 'high',
+};
 
 const AnnouncementsManager = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -10,38 +23,35 @@ const AnnouncementsManager = () => {
   const [newAnnouncement, setNewAnnouncement] = useState({
     message: '',
     priority: 'medium',
-    validFrom: new Date().toISOString().split('T')[0],
-    validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
+    start_at: new Date().toISOString().split('T')[0],
+    end_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
   });
 
+  const fetchAnnouncements = () => {
+    fetchWithAuth('/api/admin/announcements')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const formattedAnnouncements = data.announcements.map(ann => ({
+            ...ann,
+            priority: reversePriorityMap[ann.priority] || 'medium',
+            validFrom: ann.start_at,
+            validUntil: ann.end_at,
+            createdOn: ann.created_at,
+          }));
+          setAnnouncements(formattedAnnouncements);
+        } else {
+          toast.error('Failed to fetch announcements.');
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching announcements:", err);
+        toast.error("Failed to fetch announcements.");
+      });
+  };
+
   useEffect(() => {
-    // Sample data - in a real implementation, this would come from an API
-    setAnnouncements([
-      {
-        id: 1,
-        message: 'BPR Sukamakmur akan tutup pada 25 Desember 2025',
-        priority: 'high',
-        validFrom: new Date().toISOString(),
-        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        createdOn: new Date().toISOString()
-      },
-      {
-        id: 2,
-        message: 'Gunakan mobile app kami untuk transaksi lebih cepat',
-        priority: 'medium',
-        validFrom: new Date().toISOString(),
-        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        createdOn: new Date().toISOString()
-      },
-      {
-        id: 3,
-        message: 'Promo spesial akhir tahun - bunga deposito hingga 7.5%',
-        priority: 'low',
-        validFrom: new Date().toISOString(),
-        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        createdOn: new Date().toISOString()
-      }
-    ]);
+    fetchAnnouncements();
   }, []);
 
   const handleAddAnnouncement = () => {
@@ -50,21 +60,29 @@ const AnnouncementsManager = () => {
       return;
     }
 
-    const announcementToAdd = {
-      id: announcements.length + 1,
+    const payload = {
       ...newAnnouncement,
-      createdOn: new Date().toISOString()
+      priority: priorityMap[newAnnouncement.priority],
     };
 
-    setAnnouncements([announcementToAdd, ...announcements]); // Add to the top
-    setNewAnnouncement({
-      message: '',
-      priority: 'medium',
-      validFrom: new Date().toISOString().split('T')[0],
-      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    fetchWithAuth('/api/admin/announcements', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchAnnouncements();
+        setIsModalOpen(false);
+        toast.success('Announcement added successfully!');
+      } else {
+        toast.error('Failed to add announcement.');
+      }
+    })
+    .catch(err => {
+      console.error("Error adding announcement:", err);
+      toast.error('Failed to add announcement.');
     });
-    setIsModalOpen(false);
-    toast.success('Announcement added successfully!');
   };
 
   const handleEdit = (item) => {
@@ -72,16 +90,30 @@ const AnnouncementsManager = () => {
     setNewAnnouncement({
       message: item.message,
       priority: item.priority,
-      validFrom: item.validFrom.split('T')[0],
-      validUntil: item.validUntil.split('T')[0]
+      start_at: item.validFrom.split('T')[0],
+      end_at: item.validUntil.split('T')[0]
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
-      setAnnouncements(announcements.filter(item => item.id !== id));
-      toast.success('Announcement deleted successfully!');
+      fetchWithAuth(`/api/admin/announcements/${id}`, {
+        method: 'DELETE',
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          fetchAnnouncements();
+          toast.success('Announcement deleted successfully!');
+        } else {
+          toast.error('Failed to delete announcement.');
+        }
+      })
+      .catch(err => {
+        console.error("Error deleting announcement:", err);
+        toast.error('Failed to delete announcement.');
+      });
     }
   };
 
@@ -91,21 +123,29 @@ const AnnouncementsManager = () => {
       return;
     }
 
-    setAnnouncements(announcements.map(item =>
-      item.id === selectedAnnouncement.id ? 
-      { ...item, ...newAnnouncement, createdOn: selectedAnnouncement.createdOn } : 
-      item
-    ));
+    const payload = {
+      ...newAnnouncement,
+      priority: priorityMap[newAnnouncement.priority],
+    };
 
-    setSelectedAnnouncement(null);
-    setIsModalOpen(false);
-    setNewAnnouncement({
-      message: '',
-      priority: 'medium',
-      validFrom: new Date().toISOString().split('T')[0],
-      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    fetchWithAuth(`/api/admin/announcements/${selectedAnnouncement.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        fetchAnnouncements();
+        setIsModalOpen(false);
+        toast.success('Announcement updated successfully!');
+      } else {
+        toast.error('Failed to update announcement.');
+      }
+    })
+    .catch(err => {
+      console.error("Error updating announcement:", err);
+      toast.error('Failed to update announcement.');
     });
-    toast.success('Announcement updated successfully!');
   };
 
   const handleInputChange = (e) => {
@@ -333,8 +373,8 @@ const AnnouncementsManager = () => {
                     <label className="label">Valid Until</label>
                     <input
                       type="date"
-                      name="validUntil"
-                      value={newAnnouncement.validUntil}
+                      name="end_at"
+                      value={newAnnouncement.end_at}
                       onChange={handleInputChange}
                       className="input"
                     />
@@ -346,8 +386,8 @@ const AnnouncementsManager = () => {
                     <label className="label">Valid From</label>
                     <input
                       type="date"
-                      name="validFrom"
-                      value={newAnnouncement.validFrom}
+                      name="start_at"
+                      value={newAnnouncement.start_at}
                       onChange={handleInputChange}
                       className="input"
                     />

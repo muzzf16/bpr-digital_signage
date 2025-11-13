@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // API utility functions
 const API_BASE = '/api';
 const API_KEY = 'secret_dev_key'; // In production, this should be loaded from environment variables
@@ -41,3 +42,31 @@ const apiClient = {
 };
 
 export default apiClient;
+=======
+// frontend/src/utils/api.js
+export const fetchWithAuth = async (url, options = {}) => {
+  const token = localStorage.getItem('token');
+
+  const headers = {
+    ...options.headers,
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    cache: 'no-cache',
+  });
+
+  if (response.status === 401) {
+    // Handle unauthorized access, e.g., redirect to login
+    window.location.href = '/admin/login';
+  }
+
+  return response;
+};
+>>>>>>> d380804943724c4d81a2d29c361fce4f05b8aa12

@@ -11,6 +11,7 @@ const Sidebar = ({
   menuItems = [],
   user = { name: 'Admin BPR', role: 'Super Admin' },
   onLogout = null,
+  onMenuItemClick = null, // Add onMenuItemClick prop
   className = ""
 }) => {
   return (
@@ -26,9 +27,10 @@ const Sidebar = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed md:relative z-40 h-full w-64 bg-gradient-to-b from-blue-900/80 to-blue-800/80 backdrop-blur-lg border-r border-blue-700/50 transition-transform duration-300 ease-in-out transform ${
+        className={`admin-sidebar fixed md:relative z-40 h-full bg-gradient-to-b from-blue-900/80 to-blue-800/80 backdrop-blur-lg border-r border-blue-700/50 transition-transform duration-300 ease-in-out transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 ${className}`}
+        aria-hidden={!isOpen}
       >
         <div className="p-6 border-b border-blue-700/50">
           <div className="flex items-center space-x-3">
@@ -48,6 +50,10 @@ const Sidebar = ({
               <li key={index}>
                 <Link
                   to={item.path}
+                  onClick={() => {
+                    if (onMenuItemClick) onMenuItemClick(item.path);
+                    if (toggleSidebar && isOpen) toggleSidebar(); // Close sidebar on mobile after click
+                  }}
                   className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                     item.active
                       ? 'bg-blue-700/50 text-white'

@@ -1,78 +1,58 @@
 // src/admin/AdminLayout.jsx
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaHome, FaFilm, FaMoneyBillAlt, FaChartLine, FaDesktop, FaCog, FaNewspaper, FaBullhorn } from 'react-icons/fa';
+import Sidebar from '../components/admin/ui/Sidebar';
+import Header from '../components/admin/ui/Header';
 import '../styles/admin.css';
 
 export default function AdminLayout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
   
-  // Define menu items with their paths
+  // Define menu items with their paths and active state
   const menuItems = [
-    { path: '/admin', label: '🏠 Dashboard', key: 'dashboard' },
-    { path: '/admin/playlists', label: '🎞️ Playlists', key: 'playlists' },
-    { path: '/admin/rates', label: '💰 Rates', key: 'rates' },
-    { path: '/admin/economic', label: '📊 Economic', key: 'economic' },
-    { path: '/admin/devices', label: '🖥️ Devices', key: 'devices' },
-    { path: '/admin/settings', label: '🖼️ Display Settings', key: 'display-settings' },
-    { path: '/admin/announcements', label: '🔔 Announcements', key: 'announcements' },
+    { icon: <FaHome />, label: 'Dashboard', path: '/admin/dashboard', key: 'dashboard' },
+    { icon: <FaFilm />, label: 'Playlist', path: '/admin/playlists', key: 'playlists' },
+    { icon: <FaMoneyBillAlt />, label: 'Rates', path: '/admin/rates', key: 'rates' },
+    { icon: <FaNewspaper />, label: 'News', path: '/admin/news', key: 'news' },
+    { icon: <FaChartLine />, label: 'Economic Data', path: '/admin/economic', key: 'economic' },
+    { icon: <FaDesktop />, label: 'Devices', path: '/admin/devices', key: 'devices' },
+    { icon: <FaCog />, label: 'Display Settings', path: '/admin/settings', key: 'settings' },
+    { icon: <FaBullhorn />, label: 'Announcements', path: '/admin/announcements', key: 'announcements' },
   ];
+
+  const activeMenuItem = location.pathname.split('/')[2] || 'dashboard';
+
+  const handleMenuItemClick = (path) => {
+    navigate(path);
+  };
 
   return (
     <div className="admin-root">
       <div className="admin-wrapper">
-        <aside 
-          className={`admin-sidebar ${sidebarOpen ? "open" : "collapsed"}`}
-          aria-hidden={!sidebarOpen}
-          role="complementary"
-        >
-          <div className="brand">
-            <img src="/assets/logo-bpr.png" alt="BPR Logo" />
-            <div className="brand-text">
-              <div className="brand-bank">Bank</div>
-              <div className="brand-name">Perekonomian Rakyat</div>
-            </div>
-          </div>
-
-          <nav className="admin-nav" aria-label="Admin Navigation">
-            {menuItems.map((item) => (
-              <NavLink 
-                key={item.key} 
-                to={item.path}
-                className={({ isActive }) => isActive ? 'active' : ''}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="nav-footer">
-            <button className="btn btn-ghost" onClick={() => { /* handle logout */ }}>Logout</button>
-          </div>
-        </aside>
+        <Sidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          menuItems={menuItems.map(item => ({
+            ...item,
+            active: activeMenuItem === item.key
+          }))}
+          user={{ name: 'Admin BPR', role: 'Super Admin' }}
+          onLogout={() => { /* handle logout */ }}
+          onMenuItemClick={handleMenuItemClick}
+        />
 
         <div className={`admin-main ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
-          <header className="admin-header">
-            <div>
-              <div className="admin-title">Admin Dashboard</div>
-              <div className="muted">Kelola konten & perangkat digital signage</div>
-            </div>
-
-            <div className="header-actions">
-              <button 
-                className="btn btn-ghost" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-              >
-                ☰
-              </button>
-              <input 
-                className="input search-input" 
-                placeholder="Search..." 
-              />
-              <div className="muted">User: Super Admin</div>
-            </div>
-          </header>
+          <Header
+            title="Bank Perekonomian Rakyat - Admin Dashboard"
+            showSearch={true}
+            showNotifications={true}
+            notificationCount={3}
+            onSearch={(value) => console.log("Searching for:", value)}
+            onNotificationClick={() => { /* handle notifications */ }}
+          />
 
           <div className="admin-content">
             {children}
