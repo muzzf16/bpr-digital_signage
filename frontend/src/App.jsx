@@ -28,66 +28,10 @@ export default function App() {
         <Route path="/" element={<PlayerApp deviceId={deviceId} />} />
         <Route path="/admin" element={<ProtectedRoute />}>
           <Route
-            path=""
+            path="*" // Catch all admin routes
             element={
               <AdminLayout>
                 <Dashboard />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="devices"
-            element={
-              <AdminLayout>
-                <DevicesPage />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="playlists"
-            element={
-              <AdminLayout>
-                <PlaylistManager />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="rates"
-            element={
-              <AdminLayout>
-                <RateManager />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="news"
-            element={
-              <AdminLayout>
-                <NewsManager />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="economic"
-            element={
-              <AdminLayout>
-                <EconomicManager />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="settings"
-            element={
-              <AdminLayout>
-                <DisplaySettingsManager />
-              </AdminLayout>
-            }
-          />
-          <Route
-            path="announcements"
-            element={
-              <AdminLayout>
-                <AnnouncementsManager />
               </AdminLayout>
             }
           />
