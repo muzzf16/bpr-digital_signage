@@ -1,8 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import PlayerApp from './player/PlayerApp'; // Player app with scoped CSS
-import AdminLayout from './admin/AdminLayout'; // Admin layout with scoped CSS
-import Dashboard from './components/admin/Dashboard';
+import AdminDashboard from './components/admin/AdminDashboard'; // Combined admin layout and dashboard
+import DashboardContent from './components/admin/DashboardContent';
 import PlaylistManager from './components/admin/content/PlaylistManager';
 import RateManager from './components/admin/rates/RateManager';
 import NewsManager from './components/admin/content/NewsManager';
@@ -26,54 +26,22 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<PlayerApp deviceId={deviceId} />} />
-        
+
         {/* Admin routes with proper nested routing */}
-        <Route path="/admin" element={<ProtectedRoute />}>
-          <Route index element={
-            <AdminLayout>
-              <Dashboard />
-            </AdminLayout>
-          } />
-          <Route path="dashboard" element={
-            <AdminLayout>
-              <Dashboard />
-            </AdminLayout>
-          } />
-          <Route path="playlists" element={
-            <AdminLayout>
-              <PlaylistManager />
-            </AdminLayout>
-          } />
-          <Route path="rates" element={
-            <AdminLayout>
-              <RateManager />
-            </AdminLayout>
-          } />
-          <Route path="news" element={
-            <AdminLayout>
-              <NewsManager />
-            </AdminLayout>
-          } />
-          <Route path="economic" element={
-            <AdminLayout>
-              <EconomicManager />
-            </AdminLayout>
-          } />
-          <Route path="settings" element={
-            <AdminLayout>
-              <DisplaySettingsManager />
-            </AdminLayout>
-          } />
-          <Route path="announcements" element={
-            <AdminLayout>
-              <AnnouncementsManager />
-            </AdminLayout>
-          } />
-          <Route path="devices" element={
-            <AdminLayout>
-              <DevicesPage />
-            </AdminLayout>
-          } />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }>
+          <Route index element={<DashboardContent />} />
+          <Route path="dashboard" element={<DashboardContent />} />
+          <Route path="playlists" element={<PlaylistManager />} />
+          <Route path="rates" element={<RateManager />} />
+          <Route path="news" element={<NewsManager />} />
+          <Route path="economic" element={<EconomicManager />} />
+          <Route path="settings" element={<DisplaySettingsManager />} />
+          <Route path="announcements" element={<AnnouncementsManager />} />
+          <Route path="devices" element={<DevicesPage />} />
         </Route>
       </Routes>
     </Router>
