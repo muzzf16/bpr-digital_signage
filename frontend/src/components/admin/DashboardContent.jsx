@@ -18,13 +18,13 @@ const DashboardContent = () => {
     // Fetch dashboard data
     const fetchDashboardData = async () => {
       try {
-        const [playlistsRes, devicesRes, ratesRes, newsRes, announcementsRes] = 
+        const [playlistsRes, devicesRes, ratesRes, newsRes, announcementsRes] =
           await Promise.allSettled([
-            fetchWithAuth('/api/playlists'),
-            fetchWithAuth('/api/devices'),
-            fetchWithAuth('/api/rates'),
-            fetchWithAuth('/api/news'),
-            fetchWithAuth('/api/announcements')
+            fetchWithAuth('/api/admin/playlists'),
+            fetchWithAuth('/api/admin/devices'),
+            fetchWithAuth('/api/admin/rates'),
+            fetchWithAuth('/api/admin/news'),
+            fetchWithAuth('/api/admin/announcements')
           ]);
 
         const data = {
@@ -35,7 +35,14 @@ const DashboardContent = () => {
           announcements: announcementsRes.status === 'fulfilled' ? await announcementsRes.value.json() : []
         };
 
-        setDashboardData(data);
+        // If the response has a 'data' or 'success' wrapper, extract the relevant part
+        setDashboardData({
+          playlists: Array.isArray(data.playlists) ? data.playlists : (data.playlists.data || data.playlists.playlists || []),
+          devices: Array.isArray(data.devices) ? data.devices : (data.devices.data || data.devices.devices || []),
+          rates: Array.isArray(data.rates) ? data.rates : (data.rates.data || data.rates.rates || []),
+          news: Array.isArray(data.news) ? data.news : (data.news.data || data.news.news || []),
+          announcements: Array.isArray(data.announcements) ? data.announcements : (data.announcements.data || data.announcements.announcements || [])
+        });
         setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);

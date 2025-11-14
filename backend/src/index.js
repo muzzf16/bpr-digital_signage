@@ -58,13 +58,18 @@ app.use('/api/auth', authRouter);
 // API key middleware
 app.use((req, res, next) => {
   const key = req.headers['x-api-key'] || req.query.api_key;
-  
+
   // Check if this is an admin route that requires JWT
   const isAdminRoute = req.path.startsWith('/api/admin');
-  
+  // Check if this is an auth route that should be publicly accessible
+  const isAuthRoute = req.path.startsWith('/api/auth');
+
   if (isAdminRoute) {
     // For admin routes, use the JWT middleware
     authenticateJWT(req, res, next);
+  } else if (isAuthRoute) {
+    // Auth routes are publicly accessible - let them pass through
+    next();
   } else {
     // Device routes require API key
     if (!key || key !== API_KEY) {
@@ -105,8 +110,8 @@ app.use('/api/admin', adminDashboardRouter);
 app.use('/api/economic', economicRouter);
 app.use('/api/playlist', playlistRouter); // Keep existing route for compatibility
 app.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'BPR Signage Backend API',
     version: '1.0.0',
     endpoints: [
@@ -121,6 +126,21 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`BPR Signage Backend running on http://localhost:${PORT}`);
+});
+
+// Handle server errors
+app.on('error', (error) => {
+  console.error('Server error:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });
 
 // Graceful shutdown

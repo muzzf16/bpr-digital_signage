@@ -2,18 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaBullhorn, FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { fetchWithAuth } from '../../../utils/api';
-
-const priorityMap = {
-  low: 1,
-  medium: 10,
-  high: 20,
-};
-
-const reversePriorityMap = {
-  1: 'low',
-  10: 'medium',
-  20: 'high',
-};
+import { priorityMap, reversePriorityMap } from "../../../utils/common";
 
 const AnnouncementsManager = () => {
   const [announcements, setAnnouncements] = useState([]);

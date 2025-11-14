@@ -12,7 +12,7 @@
 Aplikasi **Digital Signage Web App** ini dikembangkan untuk **Bank Perkreditan Rakyat (BPR)** sebagai sistem tampilan informasi digital yang modern, terpusat, dan aman.
 
 Tujuan utama:
-- Menampilkan **promo produk**, **suku bunga tabungan/deposito**, dan **informasi ekonomi terkini** secara real-time di layar TV cabang.
+- Menampilkan **promo produk**, **suku bunga tabungan/deposito**, dan **informasi ekonomi terkini** secara real-time 
 - Memberikan **transparansi data finansial** kepada nasabah melalui kurs resmi, harga emas, IHSG, dan berita ekonomi.
 
 ---
@@ -23,8 +23,8 @@ Tujuan utama:
 |-------|------------|
 | 🎥 **Promo Produk & Video** | Tampilkan media promosi dan branding bank |
 | 💰 **Info Suku Bunga (Rate)** | Data tabungan & deposito, terhubung ke CMS |
-| 💱 **Kurs Resmi BI / BCA** | Data kurs valas dari Bank Indonesia (SOAP) dan BCA Exchange Rates |
-| 🪙 **Harga Emas (GoldAPI)** | Harga emas per gram & ounce, update otomatis |
+| 💱 **Kurs Resmi  BCA** | Data kurs valas dari Bank Indonesia (SOAP) dan BCA Exchange Rates |
+| 🪙 **Harga Emas** | Harga emas per gram & ounce, update otomatis |
 | 📈 **IHSG (Yahoo Finance)** | Indeks saham gabungan terkini |
 | 📰 **Berita Ekonomi (RSS)** | Feed berita ekonomi nasional dari CNBC, Kontan, Antara |
 | 🛰️ **Remote Management** | Update konten dari kantor pusat |
@@ -49,9 +49,9 @@ v
 | - /api/economic |
 | |
 | Integrasi Eksternal: |
-| ├── Bank Indonesia (SOAP) |
+| ├──  |
 | ├── BCA Exchange Rates |
-| ├── GoldAPI.io (XAU/IDR) |
+| ├──  |
 | ├── Yahoo Finance (^JKSE) |
 | └── RSS News Feeds |
 +-------------+---------------+
@@ -100,22 +100,6 @@ v
 
 ## 💱 Economic Data Integrations
 
-### 1️⃣ Bank Indonesia (SOAP WebService)
-
-- **Endpoint:** `BI_WS_URL` (ex: `https://webservice.bi.go.id/wsKursBI.asmx`)
-- **Method:** SOAP `GetKursOnDate`
-- **Template (BI_SOAP_BODY_TEMPLATE):**
-  ```xml
-  <?xml version="1.0" encoding="utf-8"?>
-  <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                 xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <GetKursOnDate xmlns="http://webservice.bi.go.id/">
-        <date>{DATE}</date>
-      </GetKursOnDate>
-    </soap:Body>
-  </soap:Envelope>
 2️⃣ BCA Exchange Rates API
 
 Repo Asli: https://github.com/amirhsn/bca-exchange-rates
@@ -126,8 +110,8 @@ Data: E-Rate, TT Counter, dan Bank Notes (Buy/Sell)
 
 .env Konfigurasi:
 
-BCA_RATES_URL=https://bca-exchange-rates.vercel.app
-BCA_RATE_SOURCE=E_RATE_SELL
+BCA_RATES_URL=
+BCA_RATE_SOURCE=
 
 
 Mapping Otomatis:
@@ -155,15 +139,6 @@ Hasil JSON:
 }
 
 
-Konversi otomatis:
-
-1 troy ounce = 31.1034768 gram
-
-Harga per gram = price / 31.1034768
-
-.env:
-
-GOLD_API_KEY=YOUR_GOLDAPI_KEY
 
 4️⃣ Yahoo Finance (IHSG / IDX Composite)
 
@@ -211,17 +186,13 @@ Contoh .env:
 PORT=4000
 API_KEY=secret_dev_key
 
-# BI SOAP
-BI_WS_URL=https://webservice.bi.go.id/wsKursBI.asmx
-BI_SOAP_ACTION=http://webservice.bi.go.id/GetKursOnDate
-BI_SOAP_BODY_TEMPLATE=<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetKursOnDate xmlns="http://webservice.bi.go.id/"><date>{DATE}</date></GetKursOnDate></soap:Body></soap:Envelope>
+
 
 # BCA Exchange Rates
 BCA_RATES_URL=https://bca-exchange-rates.vercel.app
 BCA_RATE_SOURCE=E_RATE_SELL
 
-# GoldAPI
-GOLD_API_KEY=YOUR_GOLDAPI_KEY
+
 
 # News feeds
 NEWS_FEEDS=https://www.cnbcindonesia.com/market/rss/,https://www.kontan.co.id/rss

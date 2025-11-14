@@ -83,17 +83,13 @@ bpr-digital-signage-starter/
 PORT=4000
 API_KEY=secret_dev_key
 
-# BI SOAP (optional)
-BI_WS_URL=
-BI_SOAP_ACTION=
-BI_SOAP_BODY_TEMPLATE=
+
 
 # BCA exchange rates (optional)
 BCA_RATES_URL=https://bca-exchange-rates.vercel.app
 BCA_RATE_SOURCE=E_RATE_SELL
 
-# GoldAPI
-GOLD_API_KEY=
+
 
 # News feeds
 NEWS_FEEDS=https://www.cnbcindonesia.com/market/rss/,https://www.kontan.co.id/rss
@@ -107,17 +103,6 @@ REFRESH_NEWS_SECONDS=900
 
 ---
 
-### backend/Dockerfile
-
-```
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --production
-COPY . .
-EXPOSE 4000
-CMD ["node", "src/index.js"]
-```
 
 ---
 

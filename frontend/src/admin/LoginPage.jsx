@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { updateToken } = useAuth();  // Get the updateToken function from useAuth
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+    console.log('handleSubmit called'); // Added for debugging
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
       console.log('Attempting login with:', { username, password: '***' }); // Log attempt
+      console.log('About to make fetch request'); // Added for debugging
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -22,11 +26,18 @@ export default function LoginPage() {
       });
 
       console.log('Login response status:', res.status); // Log response status
-      const responseText = await res.text(); // Read response as text
-      console.log('Login raw response text:', responseText); // Log raw response text
-      const data = JSON.parse(responseText); // Manually parse JSON
+
+      // Check if the response is JSON before parsing
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned non-JSON response');
+      }
+
+      const data = await res.json(); // Directly parse JSON
       console.log('Login response data:', data); // Log the full response
-      console.log('Login response data.token:', data.token); // Log the token specifically
+      console.log('Login response data.token before localStorage:', data.token); // Log the token specifically
 
       if (!res.ok) {
         throw new Error(data.message || 'Login failed');
@@ -39,7 +50,7 @@ export default function LoginPage() {
       }
 
       console.log('Token received, storing in localStorage');
-      localStorage.setItem('token', data.token);
+      updateToken(data.token);  // Use the updateToken function from useAuth
       console.log('Token stored in localStorage:', localStorage.getItem('token'));
 
       navigate('/admin', { replace: true });
@@ -96,6 +107,7 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
+              onClick={() => console.log('Login button clicked!')} // Added for debugging
               className={`w-full px-4 py-2 font-bold text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'}`}
               disabled={loading}
             >

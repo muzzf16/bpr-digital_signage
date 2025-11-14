@@ -1,21 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaDesktop, FaSync, FaPlus, FaDownload, FaSearch, FaEdit, FaTrash, FaEye, FaLink } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import GlassCard from '../../GlassCard';
+import GlassCard from '../../shared/GlassCard';
 import DataTable from '../ui/DataTable';
 import { fetchWithAuth } from '../../../utils/api';
-
-function humanizeDate(iso) {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = Math.floor((now - d) / 1000);
-  if (diff < 10) return 'Just now';
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 600)}h`;
-  return d.toLocaleString('id-ID');
-}
+import { humanizeDate } from "../../../utils/common";
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState([]);

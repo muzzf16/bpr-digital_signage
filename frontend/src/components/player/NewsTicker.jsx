@@ -1,27 +1,11 @@
 import React, { useMemo, useRef, useEffect } from 'react';
-import { useEconomicData } from '../context/EconomicContext';
+import { useEconomicData } from '../../context/EconomicContext';
+import { getNewsIcon } from "../../utils/common";
 
 // Constants
 const MIN_ANIMATION_DURATION = 30; // Increased minimum duration to 30 seconds as requested
 const ANIMATION_SPEED_FACTOR = 20; // Slower speed factor
 const ANIMATION_LENGTH_DIVISOR = 100; // Divisor for calculating duration based on text length
-
-// Function to get news icon based on category
-const getNewsIcon = (title) => {
-  const lowerTitle = title.toLowerCase();
-  
-  if (lowerTitle.includes('ihsg') || lowerTitle.includes('saham') || lowerTitle.includes('stock') || lowerTitle.includes('market')) {
-    return '💹';
-  } else if (lowerTitle.includes('bank') || lowerTitle.includes('bpr') || lowerTitle.includes('perbankan') || lowerTitle.includes('bi') || lowerTitle.includes('o j k')) {
-    return '🏦';
-  } else if (lowerTitle.includes('inflasi') || lowerTitle.includes('ekonomi') || lowerTitle.includes('makro') || lowerTitle.includes('gdp')) {
-    return '💰';
-  } else if (lowerTitle.includes('rupiah') || lowerTitle.includes('kurs') || lowerTitle.includes('dollar') || lowerTitle.includes('valas')) {
-    return '💱';
-  } else {
-    return '📰';
-  }
-};
 
 export default function NewsTicker() {
   const { data, loading } = useEconomicData();

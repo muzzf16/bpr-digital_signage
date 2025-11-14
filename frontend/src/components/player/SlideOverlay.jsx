@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
-import EconPanel from './EconPanel';
+import { LazyEconPanel } from '../panels';
 
 const SlideOverlay = ({ currentItem, allowSound, scheduleNextTick }) => {
   if (!currentItem) return null;
@@ -14,11 +14,11 @@ const SlideOverlay = ({ currentItem, allowSound, scheduleNextTick }) => {
         </div>
       )}
 
-      {currentItem.type === "economic" && (
+      {/* {currentItem.type === "economic" && (
         <div className="slide-overlay-item">
-          <EconPanel />
+          <LazyEconPanel />
         </div>
-      )}
+      )} */}
 
       {currentItem.type === "video" && (
         <div className="slide-overlay-item" style={{ pointerEvents: "auto" }}>
@@ -35,4 +35,4 @@ const SlideOverlay = ({ currentItem, allowSound, scheduleNextTick }) => {
   );
 };
 
-export default SlideOverlay;
+export default memo(SlideOverlay);

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import RatePanel from './RatePanel';
 
 const ProductHighlight = () => {
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
@@ -15,7 +14,7 @@ const ProductHighlight = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentProductIndex(prevIndex => (prevIndex + 1) % products.length);
-    }, 10000); // Change every 10 seconds
+    }, 3000); // Change every 3 seconds
 
     return () => clearInterval(interval);
   }, [products.length]);
@@ -27,7 +26,6 @@ const ProductHighlight = () => {
       <div className="product-highlight-header">
         Produk Unggulan
       </div>
-      
       <div className="product-highlight-content">
         <div className="product-highlight-icon">
           {currentProduct.icon}
@@ -42,7 +40,7 @@ const ProductHighlight = () => {
           {currentProduct.value}
         </div>
       </div>
-      
+
       <div className="product-highlight-indicators">
         {products.map((_, idx) => (
           <div
@@ -51,7 +49,6 @@ const ProductHighlight = () => {
           />
         ))}
       </div>
-      <RatePanel />
     </div>
   );
 };

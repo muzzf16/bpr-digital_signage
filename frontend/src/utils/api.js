@@ -20,9 +20,9 @@ export const fetchWithAuth = async (url, options = {}) => {
 
     // Handle unauthorized access (401)
     if (response.status === 401) {
-      // Clear the token and redirect to login
+      // Clear the token from localStorage
       localStorage.removeItem('token');
-      window.location.href = '/admin';
+      // Return response so calling code can handle the 401 appropriately
       return response;
     }
 
@@ -43,4 +43,3 @@ export const fetchWithAuth = async (url, options = {}) => {
     throw error;
   }
 };
- 

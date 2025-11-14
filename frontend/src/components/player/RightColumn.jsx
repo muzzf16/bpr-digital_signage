@@ -1,8 +1,6 @@
 import React from 'react';
-import ProductHighlight from './ProductHighlight';
-import NewsPanel from './NewsPanel';
-import EconPanel from './EconPanel';
-import MiniChart from './MiniChart';
+import { LazyProductHighlight, LazyNewsPanel, LazyEconPanel, LazyMiniChart } from '../panels';
+import { Overview, Currency, NewsPanel, MiniChart as MiniChartComponent } from './RightColumnSubComponents';
 
 const RightColumn = ({ economicData }) => {
   const temperature = economicData?.weather?.temperature || 31;
@@ -24,10 +22,10 @@ const RightColumn = ({ economicData }) => {
       {/* Middle Module: Product & News */}
       <div className="right-col-module grid-2-col">
         <div className="right-col-sub-module">
-          <ProductHighlight />
+          <LazyProductHighlight />
         </div>
         <div className="right-col-sub-module">
-          <NewsPanel />
+          <LazyNewsPanel />
         </div>
       </div>
 
@@ -35,10 +33,10 @@ const RightColumn = ({ economicData }) => {
       <div className="right-col-module grid-1-col">
         <div className="right-col-sub-module">
           <div style={{ height: '60%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <EconPanel />
+            <LazyEconPanel />
           </div>
           <div style={{ height: '40%', marginTop: "0.5vh" }}>
-            <MiniChart
+            <LazyMiniChart
               type="line"
               data={[7120, 7135, 7150, 7145, 7160, 7155, 7165]}
               title="IHSG"
@@ -52,5 +50,11 @@ const RightColumn = ({ economicData }) => {
     </div>
   );
 };
+
+// Export sub-components for use in the refactored Player layout
+RightColumn.Overview = Overview;
+RightColumn.Currency = Currency;
+RightColumn.NewsPanel = NewsPanel;
+RightColumn.MiniChart = MiniChartComponent;
 
 export default RightColumn;

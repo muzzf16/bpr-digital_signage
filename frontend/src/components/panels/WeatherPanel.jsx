@@ -1,24 +1,7 @@
 import React from 'react';
+import { getWeatherIcon } from "../../utils/common";
 
 const WeatherPanel = ({ location = "Depok", temperature = 31, condition = "Cerah Berawan", weatherCode = "sunny" }) => {
-  // Weather icon mapping
-  const getWeatherIcon = (code) => {
-    switch(code) {
-      case 'sunny':
-      case 'clear':
-        return '☀️';
-      case 'cloudy':
-      case 'partly-cloudy':
-        return '🌤️';
-      case 'rainy':
-        return '🌧️';
-      case 'storm':
-        return '⛈️';
-      default:
-        return '🌤️';
-    }
-  };
-
   return (
     <div style={{
       background: 'linear-gradient(180deg, #073b68, #032b4f)',
